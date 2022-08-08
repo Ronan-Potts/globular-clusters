@@ -16,12 +16,29 @@ number-sections: true # (Optional) Puts numbers next to heading/subheadings
 jupyter: python3
 ---
 
+# Introduction
+
+## Overview
+
+We will be studying **Globular Clusters** using data from **Gaia**. A key website that lists a huge amount of information for all the Milky Way globular clusters can be found [here](https://people.smp.uq.edu.au/HolgerBaumgardt/globular/).
+
+## Project Aim
+
+> To investigate the relationship between the kinematics and visual attributes of Milky Way's globular clusters.
+
+
+
 # Displaying the Data
 
+## Catalogues
+
+This folder contains results of astrometric classification of stars in 170 globular clusters, using Gaia EDR3.
 
 ```{python}
+#| echo: false
+
 import pandas as pd
-from IPython.display import display
+from IPython.display import display, Markdown
 
 # Accessing the file
 filePath = "../clusters/catalogues/"
@@ -32,6 +49,64 @@ f_data = pd.read_csv(filePath+fileName, sep="\t", header=0).rename(
     columns=lambda x: x.strip()
 )
 
+# ===============================================================================
+# ------------------------------DISPLAYED RESULTS--------------------------------
+# ===============================================================================
+
 # Display the pandas dataframe with IPython.display
 display(f_data)
+
+# Write text outside of cell
+display(Markdown("""
+  Here we glance at data from {}. The variables can be defined as follows:
+
+  * **# source_id:** Gaia source ID
+
+  * **ra:** celestial coordinate - right ascension \[degrees\];
+
+  * **dec:** celestial coordinate - declination \[degrees\];
+
+  * **x:** x-coordinate centered on the cluster \[degrees\];
+
+  * **y:** y-coordinate centered on the cluster \[degrees\];
+
+  * **plx:** parallax corrected for zero-point offset using the Lindegren et al. prescription \[milli-arcseconds\];
+
+  * **pmra:** proper motion in right ascension \[milli-arcseconds/year\];
+
+  * **pmdec:** proper motion in declination \[milli-arcseconds/year\];
+
+  * **plxe:** parallax uncertainty \[milli-arcseconds\];
+
+  * **pmrae:** proper motion uncertainty in right ascension \[milli-arcseconds/year\];
+
+  * **pmdece:** proper motion uncertainty in declination \[milli-arcseconds/year\];
+
+  * **pmcorr:** correlation coefficient between the two proper motion uncertainties;
+
+  * **g_map:** G-band magnitude;
+
+  * **bp_rp:** BP-RP;
+
+  * **Sigma:** source density, used to determine parallax/proper motion uncertainty scaling factors \[stars/arcmin^2\];
+
+  * **qflag:** quality flag \[bitfield - 4 possible combinations of two independent flags:
+
+    * lowest bit (0/1) denotes 6-parameter (0) or 5-parameter (1) solutions;
+
+    * next bit (0/2) distinguises stars that passed all quality filters (2) from those that didn't (0)\];
+
+  * **memberprob:** membership probability.
+  """.format(fileName)
+))
 ```
+
+## Profiles
+
+This folder contains radial profiles of the rotational proper motion component and the proper motion dispersion for some clusters. The columns are:
+
+* **# source_id:** distance from cluster centre \[degrees\];
+
+* **ra:** percentiles for the proper motion dispersion \[milli-arcseconds/year\] (2.3, 15.9, 50, 84.1, 97.7 percentiles);
+
+* **dec:** percentiles for the proper motion rotation \[milli-arcseconds/year\] (2.3, 15.9, 50, 84.1, 97.7 percentiles).
