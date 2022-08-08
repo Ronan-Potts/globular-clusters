@@ -1,0 +1,37 @@
+---
+title: "Galaxy Clusters"
+format:
+  html:
+    ### IMPORTANT ###
+    self-contained: true # Creates a single HTML file as output
+    code-fold: show # Code folding; allows you to show/hide code chunks
+    ### USEFUL ###
+    code-tools: true # Includes a menu to show/hide all chunks
+    ### OPTIONAL ###
+    code-line-numbers: true # Line numbers in code chunks
+    df-print: paged # Sets how dataframes are automatically printed
+    code-fold: true
+table-of-contents: true # (Useful) Creates a table of contents!
+number-sections: true # (Optional) Puts numbers next to heading/subheadings
+jupyter: python3
+---
+
+# Displaying the Data
+
+
+```{python}
+import pandas as pd
+from IPython.display import display
+
+# Accessing the file
+filePath = "../clusters/catalogues/"
+fileName = "Pal_5.txt"
+
+# Reading file with pandas
+f_data = pd.read_csv(filePath+fileName, sep="\t", header=0).rename(
+    columns=lambda x: x.strip()
+)
+
+# Display the pandas dataframe with IPython.display
+display(f_data)
+```
