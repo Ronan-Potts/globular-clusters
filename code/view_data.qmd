@@ -28,7 +28,7 @@ We will be studying **Globular Clusters** using data from **Gaia**. A key websit
 
 
 
-# Displaying the Data
+# Investigating the Data
 
 ## Catalogues
 
@@ -110,3 +110,44 @@ This folder contains radial profiles of the rotational proper motion component a
 * **ra:** percentiles for the proper motion dispersion \[milli-arcseconds/year\] (2.3, 15.9, 50, 84.1, 97.7 percentiles);
 
 * **dec:** percentiles for the proper motion rotation \[milli-arcseconds/year\] (2.3, 15.9, 50, 84.1, 97.7 percentiles).
+
+# Preliminary Data Exploration - Week 2
+
+## Plotting declination and right ascension spread
+
+```{python}
+#| echo: false
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Accessing the file
+filePath = "../clusters/catalogues/"
+fileName = "Pal_5.txt"
+
+# Reading file with pandas
+f_data = pd.read_csv(filePath+fileName, sep="\t", header=0).rename(
+    columns=lambda x: x.strip()
+)
+
+ra_deg = f_data["ra"]
+dec_deg = f_data["dec"]
+member_prob = f_data["memberprob"]
+
+
+from IPython.display import display,Markdown
+display(Markdown("""
+Below I plot the deviation of the right ascension and declination from their respective means for the {} dataset. A colormap has also been added showing the membership probability of each star.
+""".format(fileName)))
+
+# cmap="Wistia" shows all points with none being hidden, while also allowing the reader to filter out any stars with a low membership profile.
+plt.scatter(ra_deg-np.mean(ra_deg), dec_deg-np.mean(dec_deg), c=member_prob, cmap='Wistia')
+plt.colorbar()
+plt.title("Figure 1: a visualisation of the {} cluster spread in the celestial sphere.".format(fileName))
+plt.xlabel("Right Ascension Deviation (degrees)")
+plt.ylabel("Declination Deviation (degrees)")
+plt.show()
+```
+
+
+[nice website with possible Shiny interaction in HTML document](https://quarto.org/docs/interactive/)
