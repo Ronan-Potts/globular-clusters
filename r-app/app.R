@@ -29,11 +29,8 @@ colnames(f_data) = c("Source ID",
 ui <- fluidPage(
 
     # Application title
-    titlePanel(paste("Visualisation of Data in",fileName)),
+    titlePanel(textOutput("titleText")),
 
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
           tabsetPanel(
             tabPanel("Galaxy Cluster",
             selectInput("fileName",
@@ -63,23 +60,20 @@ ui <- fluidPage(
                                  "Normalise Distribution",
                                  value = TRUE)
             )
-          )
-        ),
+          ),
 
         # Show a plot of the generated distribution
-        mainPanel(
            tabsetPanel(
              tabPanel("Scatter Plot",
-                      plotOutput("distPlot")),
+                      plotOutput("distPlot", width="75%")),
              tabPanel("Histogram for X Variable",
-                      plotOutput("histPlot"))
+                      plotOutput("histPlot", width="75%"))
            )
-        )
-    )
+        
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
     f_data <- reactive({
       f_data <- read.csv(paste(filePath,paste(input$fileName,".txt",sep=""), sep=""),sep='\t')
       colnames(f_data) = c("Source ID",
@@ -101,15 +95,23 @@ server <- function(input, output) {
                            "Membership Probability")
       f_data
     })
+    output$titleText <- renderText({
+      paste("Visualisation of Data in",input$fileName)
+    })
     output$distPlot <- renderPlot({
         f_data() |>
           ggplot(aes(x=.data[[input$xvar]], y=.data[[input$yvar]], color=.data[[input$colorvar]])) +
           geom_point()
+    }, height = function() {
+      0.5*session$clientData$output_distPlot_width
     })
     output$histPlot <- renderPlot({
+      # Calculate number of bins with Freedman-Diaconis rule
+      x <- f_data()[[input$histX]]
+      bw <- 2 * IQR(x) / length(x)^(1/3)
       hist_plot <- f_data() |>
-        ggplot(aes(x=.data[[input$histX]])) +
-        geom_histogram()
+        ggplot(aes(x=.data[[input$histX]], fill=.data[[input$colorvar]])) +
+        geom_histogram(binwidth=bw)
       
       if(input$norm==TRUE){
         hist_plot = hist_plot + aes(y=..count../sum(..count..)) + labs(y="Proportion")
@@ -118,6 +120,8 @@ server <- function(input, output) {
         hist_plot = hist_plot + labs(y="Count")
         hist_plot
       }
+    }, height = function() {
+      0.5*session$clientData$output_distPlot_width
     })
 }
 
