@@ -10,7 +10,7 @@ format:
     ### OPTIONAL ###
     code-line-numbers: true # Line numbers in code chunks
     df-print: paged # Sets how dataframes are automatically printed
-    code-fold: true
+    echo: false
 table-of-contents: true # (Useful) Creates a table of contents!
 number-sections: true # (Optional) Puts numbers next to heading/subheadings
 jupyter: python3
@@ -149,5 +149,3 @@ plt.ylabel("Declination Deviation (degrees)")
 plt.show()
 ```
 
-
-[nice website with possible Shiny interaction in HTML document](https://quarto.org/docs/interactive/)
