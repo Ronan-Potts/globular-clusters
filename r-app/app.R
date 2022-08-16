@@ -29,7 +29,7 @@ colnames(f_data) = c("Source ID",
 ui <- fluidPage(
 
     # Application title
-    titlePanel(textOutput("titleText")),
+    titlePanel(textOutput("titleText"),windowTitle = "Galaxy Cluster Visualisations"),
 
           tabsetPanel(
             tabPanel("Galaxy Cluster",
@@ -67,7 +67,9 @@ ui <- fluidPage(
              tabPanel("Scatter Plot",
                       plotOutput("distPlot", width="75%")),
              tabPanel("Histogram for X Variable",
-                      plotOutput("histPlot", width="75%"))
+                      plotOutput("histPlot", width="75%")),
+             tabPanel("Data Table",
+                      DT::dataTableOutput("dataTable"))
            )
         
 )
@@ -95,9 +97,11 @@ server <- function(input, output, session) {
                            "Membership Probability")
       f_data
     })
+    
     output$titleText <- renderText({
       paste("Visualisation of Data in",input$fileName)
     })
+    
     output$distPlot <- renderPlot({
         f_data() |>
           ggplot(aes(x=.data[[input$xvar]], y=.data[[input$yvar]], color=.data[[input$colorvar]])) +
@@ -105,6 +109,7 @@ server <- function(input, output, session) {
     }, height = function() {
       0.5*session$clientData$output_distPlot_width
     })
+    
     output$histPlot <- renderPlot({
       # Calculate number of bins with Freedman-Diaconis rule
       x <- f_data()[[input$histX]]
@@ -122,6 +127,11 @@ server <- function(input, output, session) {
       }
     }, height = function() {
       0.5*session$clientData$output_distPlot_width
+    })
+    
+    output$dataTable <- DT::renderDataTable({
+      f_data <- f_data() |>
+        DT::datatable()
     })
 }
 
