@@ -115,6 +115,7 @@ This folder contains radial profiles of the rotational proper motion component a
 
 ## Plotting declination and right ascension spread
 
+
 ```{python}
 #| echo: false
 import pandas as pd
