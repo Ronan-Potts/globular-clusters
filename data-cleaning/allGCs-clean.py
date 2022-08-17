@@ -28,7 +28,9 @@ for fileName in fileNames:
     ordered_cols = ['# source_id', 'ra', 'dec', 'pmra', 'pmdec', 'x', 'y', 'vx', 'vy', 'plx', 'memberprob', 'pmcorr', 'pmrae', 'pmdece', 'plxe']
     f_data = f_data[ordered_cols]
 
+    if fileName == "Pal_5.txt":
+        print(f_data)
     # Write clean files
-    f_data.to_csv(cleanPath + fileName, sep=',')
+    f_data.to_csv(cleanPath + fileName, sep=',', index=False)
 
     
