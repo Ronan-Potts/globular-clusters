@@ -39,6 +39,23 @@ ui <- fluidPage(
                           selected="NGC_4590_M_68")),
               mainPanel(
               DT::dataTableOutput("aggregateData", width="75%")))),
+            tabPanel("2D Statistic Histogram",
+                     selectInput("x2dstat",
+                                 "Select X Variable",
+                                 choices = colnames(f_data),
+                                 selected="Declination Deviation (deg)"),
+                     selectInput("y2dstat",
+                                 "Select Y Variable",
+                                 choices = colnames(f_data),
+                                 selected="Right Ascension Deviation (deg)"),
+                     selectInput("stat2d",
+                                 "Select Statistic",
+                                 choices = colnames(f_data),
+                                 selected="RA Proper Motion (mas/yr)"),
+                     sliderInput("bin2dslider",
+                                 "Bin Width",
+                                 min=0.0001, max=0.1, value=0.025)
+            ),
             tabPanel('Scatter Plot',
             selectInput("xvar",
                         "Select X Variable:",
@@ -66,6 +83,8 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
            tabsetPanel(
+             tabPanel("2D Statistic Histogram",
+                      plotOutput("stat2DHist", width="75%")),
              tabPanel("Scatter Plot",
                       plotOutput("distPlot", width="75%")),
              tabPanel("Histogram for X Variable",
@@ -143,6 +162,16 @@ server <- function(input, output, session) {
     output$dataTable <- DT::renderDataTable({
       f_data <- f_data() |>
         DT::datatable()
+    })
+    
+    output$stat2DHist <- renderPlot({
+      f_data() |>
+        ggplot(aes(x=.data[[input$x2dstat]], y=.data[[input$y2dstat]], z=.data[[input$stat2d]])) +
+        stat_summary_2d(binwidth=input$bin2dslider, fun=mean, na.rm=TRUE) + 
+        guides(fill = guide_legend(title = paste("mean[", input$stat2d, "]", sep=""), reverse=TRUE, title.position="right")) + 
+        theme(legend.key.height = unit(2.5, "cm"),legend.title = element_text(size=14,angle = 90),legend.title.align = 0.5)
+    }, height = function() {
+      0.5*session$clientData$output_stat2DHist_width
     })
 }
 
