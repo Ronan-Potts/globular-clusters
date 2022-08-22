@@ -89,7 +89,10 @@ sm.set_array([])
 
 # Plot vector field and colorbar
 plt.quiver(X_bins, Y_bins, vx_bins, vy_bins, pivot="mid", width=0.0025, scale=25*n_bins/3, color=cm(norm(size_bins)))
-plt.colorbar(sm)
+cbar = plt.colorbar(sm)
+cbar.set_label('# stars (proportion)')
+plt.xlabel('Right Ascension - 180 (deg)')
+plt.ylabel('Y Coordinate (Declination -> Mercator Projection)')
 plt.show()
 
 
