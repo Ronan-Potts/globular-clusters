@@ -91,8 +91,8 @@ sm.set_array([])
 plt.quiver(X_bins, Y_bins, vx_bins, vy_bins, pivot="mid", width=0.0025, scale=25*n_bins/3, color=cm(norm(size_bins)))
 cbar = plt.colorbar(sm)
 cbar.set_label('# stars (proportion)')
-plt.xlabel('Right Ascension - 180 (deg)')
-plt.ylabel('Y Coordinate (Declination -> Mercator Projection)')
+plt.xlabel('Right Ascension [deg] - 180 [deg]')
+plt.ylabel('ln(tan(Dec. [deg]) + sec(Dec. [deg]))')
 plt.show()
 
 
