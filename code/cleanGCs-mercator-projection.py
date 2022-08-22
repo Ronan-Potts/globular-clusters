@@ -1,11 +1,7 @@
 '''
-The purpose of this file is to map the GCs onto a 2D surface with which we can visualise the positions of the GCs and
-potentially create a vector field of the velocities of each GC. I am using equations (1) and (6) from 
-https://mathworld.wolfram.com/MercatorProjection.html. Here, right ascension (RA) is the analogue for longitude, while
-declination is the analogue for latitude.
-
-The Mercator projection is used as it keeps lines of latitude and longitude parallel and straight, meaning it may be
-easier to see a broader rotation or movement in the galaxy clusters.
+This file grabs summarised data of each GC, including coordinates of the GCs after being projected onto a 2D map using the Mercator projection.
+The Mercator projection is used as it keeps lines of latitude and longitude parallel and straight, meaning it may be easier to see a general
+movement in the galaxy clusters.
 '''
 
 import pandas as pd
