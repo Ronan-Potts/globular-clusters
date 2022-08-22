@@ -4,7 +4,7 @@ import os
 
 # Accessing the file
 filePath = "./clusters/catalogues/"
-cleanPath = 'clean-clusters/'
+cleanPath = 'clean-clusters/catalogues/'
 fileNames = os.listdir(filePath)
 
 for fileName in fileNames:
