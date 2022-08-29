@@ -43,7 +43,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
       menuItem(text="Histogram", tabName="hist")
     )),
   
-  dashboardBody(
+  dashboardBody(height="10px",
     tabItems(
       tabItem(tabName="globular-cluster",
              box(width=12,
@@ -81,7 +81,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                      sliderInput("statistic_min_max", label = h3("Statistic Range"), min = 0, 
                                  max = 1, value=c(0, 1)))
             ),
-            box(width=12,column(1),column(10, align="center", plotOutput("stat2DHist", width="100%")),column(1),height="530px")
+            fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("stat2DHist", width="100%")),column(1),height="530px"))
     ),
     tabItem(tabName='scatter-plot', align="center",
           box(width=12,
@@ -103,7 +103,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
             column(width=12,
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
                          max = 1, value = c(0.95, 1)))),
-          box(width=12,column(1),column(10, align="center", plotOutput("distPlot", width="100%")),column(1),height="530px")
+          fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("distPlot", width="100%")),column(1),height="530px"))
     ),
     tabItem(tabName="hist",
             box(width=12,
@@ -114,7 +114,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
              shiny::checkboxInput("norm",
                                   "Normalise Distribution",
                                   value = TRUE)),
-            box(width=12,column(1),column(10, align="center", plotOutput("histPlot", width="100%")),column(1),height="530px")
+            fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("histPlot", width="100%")),column(1),height="530px"))
     ))
   )
   
