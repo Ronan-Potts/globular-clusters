@@ -24,14 +24,14 @@ colnames(f_data) = c("Source ID",
                      "Parallax Uncertainty (mas)")
 
 # Define UI for application that draws a histogram
-ui <- dashboardPage(title="Galaxy Cluster Visualisations",
+ui <- dashboardPage(title="Globular Cluster Visualisations",
   
   # Application title
   dashboardHeader(title=textOutput("titleText"), titleWidth=400),
   
   dashboardSidebar(
     sidebarMenu(
-      menuItem(text="Galaxy Cluster", tabName="galaxy-cluster"),
+      menuItem(text="Globular Cluster", tabName="globular-cluster"),
       menuItem(text="2D Statistic Histogram", tabName="stat2Dhist"),
       menuItem(text="Scatter Plot", tabName="scatter-plot"),
       menuItem(text="Histogram", tabName="hist")
@@ -39,11 +39,11 @@ ui <- dashboardPage(title="Galaxy Cluster Visualisations",
   
   dashboardBody(
     tabItems(
-      tabItem(tabName="galaxy-cluster",
+      tabItem(tabName="globular-cluster",
              box(width=12,
                column(width=3,
                  selectInput("fileName",
-                             "Select a Galaxy Cluster:",
+                             "Select a Globular Cluster:",
                              choices = fileNames,
                              selected="NGC_4590_M_68")),
                column(width=9,
