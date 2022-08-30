@@ -5,7 +5,7 @@ https://mathworld.wolfram.com/MercatorProjection.html. Here, right ascension (RA
 declination is the analogue for latitude.
 
 The Mercator projection is used as it keeps lines of latitude and longitude parallel and straight, meaning it may be
-easier to see a broader rotation or movement in the galaxy clusters.
+easier to see a broader rotation or movement in the globular clusters.
 '''
 
 import pandas as pd

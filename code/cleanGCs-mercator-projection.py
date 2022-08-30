@@ -1,7 +1,7 @@
 '''
 This file grabs summarised data of each GC, including coordinates of the GCs after being projected onto a 2D map using the Mercator projection.
 The Mercator projection is used as it keeps lines of latitude and longitude parallel and straight, meaning it may be easier to see a general
-movement in the galaxy clusters.
+movement in the globular clusters.
 '''
 
 import pandas as pd
@@ -74,7 +74,7 @@ for i in range(0,n_bins-1):
             vy_bins.append(0)
             size_bins.append(0)
 
-# Create colormap and ScalarMappable to show the sizes of each aggregation of galaxy clusters.
+# Create colormap and ScalarMappable to show the sizes of each aggregation of globular clusters.
 norm = matplotlib.colors.Normalize()
 norm.autoscale(size_bins/np.sum(size_bins))
 cm = matplotlib.cm.winter

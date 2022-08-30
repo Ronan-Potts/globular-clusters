@@ -1,5 +1,5 @@
 ---
-title: "Galaxy Clusters"
+title: "Globular Clusters"
 format:
   html:
     ### IMPORTANT ###
