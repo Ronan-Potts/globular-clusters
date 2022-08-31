@@ -11,19 +11,19 @@ colnames = c("Source ID",
                      "Right Ascension (deg)",
                      "Declination (deg)",
                      "RA Proper Motion (mas/yr)",
-                     "Dec. Proper Motion (mas/year)",
+                     "Dec. Proper Motion (mas/yr)",
                      "Right Ascension Deviation (deg)",
                      "Declination Deviation (deg)",
                      "Radius (mas)",
-                     "Relative RA Proper Motion (mas/year)",
-                     "Relative Dec. Proper Motion (mas/year)",
-                     "Radial Velocity (mas/year)",
-                     "Tangential Velocity (mas/year)",
+                     "Relative RA Proper Motion (mas/yr)",
+                     "Relative Dec. Proper Motion (mas/yr)",
+                     "Radial Velocity (mas/yr)",
+                     "Tangential Velocity (mas/yr)",
                      "Parallax (mas)",
                      "Membership Probability",
                      "Corr Coef between RA and Dec. Proper Motion Uncertainties",
                      "RA Proper Motion Uncertainty (mas/yr)",
-                     "Dec. Proper Motion Uncertainty (mas/year)",
+                     "Dec. Proper Motion Uncertainty (mas/yr)",
                      "Parallax Uncertainty (mas)")
 
 
@@ -41,6 +41,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
       menuItem(text="Globular Cluster", tabName="globular-cluster"),
       menuItem(text="2D Statistic Histogram", tabName="stat2Dhist"),
       menuItem(text="Scatter Plot", tabName="scatter-plot"),
+      menuItem(text="Binned X Scatter Plot", tabName="binx-scatter-plot"),
       menuItem(text="Histogram", tabName="hist")
     )),
   
@@ -52,7 +53,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                  selectInput("fileName",
                              "Select a Globular Cluster:",
                              choices = fileNames,
-                             selected="NGC_4590_M_68")),
+                             selected="NGC_5139_oCen")),
                column(width=9,
                  DT::dataTableOutput("aggregateData", width="100%"))),
              DT::dataTableOutput("dataTable", width="100%")
@@ -73,7 +74,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                selectInput("stat2d",
                            "Select Statistic",
                            choices = colnames(f_data),
-                           selected="Tangential Velocity (mas/year)")),
+                           selected="Tangential Velocity (mas/yr)")),
               column(width=3,
                sliderInput("bin2dslider",
                            "Bin Width",
@@ -105,6 +106,24 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
                          max = 1, value = c(0.95, 1)))),
           fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("distPlot", width="100%")),column(1),height="530px"))
+    ),
+    tabItem(tabName='binx-scatter-plot', align="center",
+            box(width=12,
+                column(width=4,
+                       selectInput("binscat_xvar",
+                                   "Select X Variable:",
+                                   choices = colnames(f_data),
+                                   selected="Radius (mas)")),
+                column(width=4,
+                       selectInput("binscat_yvar",
+                                   "Select Y Variable:",
+                                   choices = colnames(f_data),
+                                   selected="Tangential Velocity (mas/yr)")),
+            column(width=4,
+                   sliderInput("binscat_bins",
+                               "Bins",
+                               min=1, max=500, value=50, step=1))),
+            fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("binnedScatter", width="100%")),column(1),height="530px"))
     ),
     tabItem(tabName="hist",
             box(width=12,
@@ -188,6 +207,26 @@ server <- function(input, output, session) {
     0.5*session$clientData$output_stat2DHist_width
   })
   
+  output$binnedScatter <- renderPlot({
+    f_data = f_data()
+    f_data = f_data |>
+      mutate(binned_data = cut(get(input$binscat_xvar), breaks=input$binscat_bins)) |>
+      group_by(binned_data) |>
+      summarise(y_data = mean(get(input$binscat_yvar)))
+    levels(f_data$binned_data) <- gsub("\\(.+,|]", "", levels(f_data$binned_data))
+    f_data |>
+      ggplot(aes(x=binned_data, y=y_data)) +
+      geom_point(colour="#00c3ff") + 
+      labs(x=input$binscat_xvar, y=input$binscat_yvar) + 
+      scale_x_discrete(breaks = levels(f_data$binned_data)[floor(seq(1, 
+                                                         nlevels(f_data$binned_data), 
+                                                         length.out = 10))])
+  }, height = function() {
+    0.5*session$clientData$output_binnedScatter_width
+  })
+  
+  
+  # Updates application with change in data.
   observe({
     data = f_data()
     min_scatter = min(data[, input$colorvar])
@@ -206,6 +245,8 @@ server <- function(input, output, session) {
                       step=signif((max_stat2d-min_stat2d)/500,2),
                       value = c(min_stat2d, max_stat2d))
   })
+  
+  
 }
 
 # Run the application 
