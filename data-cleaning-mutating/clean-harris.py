@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+# re package used for regular expressions
 import re
 
 '''
@@ -91,6 +92,8 @@ id_position_df = id_position_df[id_position_df["Name"] != "remove.txt"].sort_val
 
 # Write clean file
 id_position_df.to_csv('./data/clusters-harris/clean/id_position_data.txt', sep=',', index=False)
+
+
 '''
 Checking for GCs in clean-clusters which aren't in Harris data
 '''
