@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 # Accessing the file
-filePath = 'clean-clusters/'
+filePath = 'data/clean-clusters/'
 fileNames = os.listdir(filePath)
 
 for fileName in fileNames:

@@ -3,11 +3,17 @@ import numpy as np
 import os
 
 # Accessing the file
-filePath = "./clusters/catalogues/"
-cleanPath = 'clean-clusters/catalogues/'
+filePath = "./data/clusters/catalogues/"
+cleanPath = './data/clean-clusters/catalogues/'
 fileNames = os.listdir(filePath)
 
+harris_position_df = pd.read_csv("./data/clusters-harris/clean/id_position_data.txt", sep=',', header=0)
+harris_names = harris_position_df["Name"].tolist()
+
+matching_names = []
 for fileName in fileNames:
+    if fileName in harris_names:
+        matching_names.append(fileName[0:-4])
     # Reading file with pandas
     f_data = pd.read_csv(filePath+fileName, sep="\t", header=0).rename(
         columns=lambda x: x.strip()
@@ -39,4 +45,5 @@ for fileName in fileNames:
     # Write clean files
     f_data.to_csv(cleanPath + fileName, sep=',', index=False)
 
-    
+# The output of this will be copied into the R application as the files that can be selected.
+print(matching_names)

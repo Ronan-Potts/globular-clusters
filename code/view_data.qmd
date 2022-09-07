@@ -41,7 +41,7 @@ import pandas as pd
 from IPython.display import display, Markdown
 
 # Accessing the file
-filePath = "../clusters/catalogues/"
+filePath = "../data/clusters/catalogues/"
 fileName = "Pal_5.txt"
 
 # Reading file with pandas
@@ -123,7 +123,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Accessing the file
-filePath = "../clusters/catalogues/"
+filePath = "../data/clusters/catalogues/"
 fileName = "Pal_5.txt"
 
 # Reading file with pandas

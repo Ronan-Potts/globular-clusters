@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 # Read summarised data
-df_pos_vel = pd.read_csv('clean-clusters/GCs_Summary.txt', header=0)
+df_pos_vel = pd.read_csv('data/clean-clusters/GCs_Summary.txt', header=0)
 
 mean_x = df_pos_vel['mean_x']
 mean_y = df_pos_vel['mean_y']

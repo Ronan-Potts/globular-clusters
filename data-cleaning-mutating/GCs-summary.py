@@ -14,7 +14,7 @@ import os
 
 
 # Accessing the file
-filePath = 'clean-clusters/catalogues/'
+filePath = 'data/clean-clusters/catalogues/'
 fileNames = os.listdir(filePath)
 
 mean_x = []
@@ -52,4 +52,4 @@ for fileName in fileNames:
 df_pos_vel = pd.DataFrame(list(zip(names, mean_x,mean_y,mean_vx,mean_vy,size)), columns=['file_name', 'mean_x','mean_y','mean_vx','mean_vy', 'size'])
 
 # Write summarised data for each GC into a file.
-df_pos_vel.to_csv('clean-clusters/GCs_Summary.txt', sep=',', index=False)
+df_pos_vel.to_csv('data/clean-clusters/GCs_Summary.txt', sep=',', index=False)
