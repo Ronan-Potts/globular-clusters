@@ -165,6 +165,11 @@ server <- function(input, output, session) {
     f_data
   })
   
+  h_data <- reactive({
+    h_data <- read.csv("data/clusters-harris/clean/id_position_data.txt")
+    h_data
+  })
+  
   output$titleText <- renderText({
     paste("Visualisation of Data in",input$fileName)
   })
@@ -174,8 +179,9 @@ server <- function(input, output, session) {
     mean_Dec = signif(mean(f_data()[,3]), digits=6)
     mean_PMRA = signif(mean(f_data()[,4]), digits=6)
     mean_PMDEC = signif(mean(f_data()[,5]), digits=6)
-    disp_table <- as.data.frame(matrix(c(mean_RA, mean_Dec, mean_PMRA, mean_PMDEC), byrow=TRUE, nrow=1))
-    colnames(disp_table) = c("Right Ascension (deg)", "Declination (deg)", "RA Proper Motion (mas/yr)", "Dec. Proper Motion (mas/yr)")
+    R_sun = signif(mean(h_data()[h_data()[,"Name"]==paste(input$fileName,".txt",sep=''),6]), digits=6)
+    disp_table <- as.data.frame(matrix(c(mean_RA, mean_Dec, mean_PMRA, mean_PMDEC, R_sun), byrow=TRUE, nrow=1))
+    colnames(disp_table) = c("Right Ascension (deg)", "Declination (deg)", "RA Proper Motion (mas/yr)", "Dec. Proper Motion (mas/yr)", "Distance from Sun (kPc)")
     DT::datatable(disp_table, options=list(dom='t'), rownames=FALSE)
     
   })
@@ -227,6 +233,10 @@ server <- function(input, output, session) {
   
   # Binned-X Scatter Plot
   output$binnedScatter <- renderPlot({
+    R_sun = mean(h_data()[h_data()[,"Name"]==paste(input$fileName,".txt",sep=''),6])
+    mas_to_rad = (2*pi)/(360*3600*1000)
+    kPc_to_km = 3.086e+16
+    yr_to_s = 60*60*24*365
     # If you want to fit a curve:
     if (input$binscat_fit) {
       # Bin x values and calculate mean/se of data in each x bin
@@ -258,7 +268,11 @@ server <- function(input, output, session) {
         ggplot(aes(x=binned_data, y=y_data)) +
         geom_point(colour="#00c3ff") +  labs(x=input$binscat_xvar, y=input$binscat_yvar) +
         geom_function(fun = function(x) I(E-(omega*x)/(1+b*(x^(2*cpow))))) +
-        geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2)
+        geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2) + 
+        # Add second x axis on top
+        scale_x_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad, name = "Radius (km)")) + 
+        # Add second y axis on right
+        scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Tangential Velocity (km/s)"))
     } else {
     # Bin x values and calculate mean/se of data in each x bin
     f_data = f_data() |>
@@ -280,7 +294,11 @@ server <- function(input, output, session) {
       ggplot(aes(x=binned_data, y=y_data)) +
       geom_point(colour="#00c3ff") + 
       labs(x=input$binscat_xvar, y=input$binscat_yvar) +
-      geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2)
+      geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2) + 
+      # Add second x axis on top
+      scale_x_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad, name = "Radius (km)")) + 
+      # Add second y axis on right
+      scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Tangential Velocity (km/s)"))
     }
   }, height = function() {
     0.5*session$clientData$output_binnedScatter_width
