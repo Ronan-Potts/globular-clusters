@@ -1,10 +1,9 @@
 # to do:
 
-# bring all visualisations into a singlebdrop-down menu, create a home screen
+# fix box height
 
 library(shiny)
 library(tidyverse)
-library(shinydashboardPlus)
 library(shinydashboard)
 
 filePath <- "data/clean-clusters/catalogues/"
@@ -43,11 +42,14 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
   
   dashboardSidebar(
     sidebarMenu(
+      menuItem(text="Home", icon=icon("house"), tabName="home"),
       menuItem(text="Globular Cluster", icon=icon("database"), tabName="globular-cluster"),
-      menuItem(text="2D Statistic Histogram", icon=icon("image"), tabName="stat2Dhist"),
-      menuItem(text="Scatter Plot", icon=icon("image"), tabName="scatter-plot"),
-      menuItem(text="Binned X Scatter Plot", icon=icon("image"), tabName="binx-scatter-plot"),
-      menuItem(text="Histogram", icon=icon("image"), tabName="hist")
+      menuItem(text="Visualisations", icon=icon("image"), tabName="visualisations",
+        menuSubItem(text="2D Statistic Histogram", tabName="stat2Dhist"),
+        menuSubItem(text="Scatter Plot", tabName="scatter-plot"),
+        menuSubItem(text="Binned X Scatter Plot", tabName="binx-scatter-plot"),
+        menuSubItem(text="Histogram", tabName="hist")
+      )
     )),
   
   dashboardBody(
@@ -66,6 +68,14 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                                       }")
     ),
     tabItems(
+      tabItem(tabName="home",
+              box(width=12, title="Introduction to Data",
+                  htmlOutput("intro_text")),
+              box(width=12, title="Packages & Versions",
+                  htmlOutput("package_text")),
+              box(width=12, title="Author",
+                  htmlOutput("author_text"))
+      ),
       tabItem(tabName="globular-cluster",
              box(width=12, title="Controls",
                column(width=3,
@@ -164,6 +174,34 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+  
+  
+  # Home Page ________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+  
+  output$intro_text <- renderUI({
+    HTML(paste("Welcome to my <b>PHYS2923 globular clusters shiny application</b>! Here,
+               you will be able to quickly and easily analyse data from a multitude of files, including the most recent <a href='https://zenodo.org/record/4891252#.YvCGAHZBwuU'>Catalogue of stars in Milky Way globular clusters from Gaia EDR3</a>
+               and an older <a href='https://physics.mcmaster.ca/~harris/mwgc.dat'>catalog of parameters for milky way globular clusters</a>.",
+               "Here, you have access to many <b>visualisations</b> to explore properties of the data There is also a <b>data table</b> if you wish to
+               explore a specific entry in the data.", sep="<br><br>"))
+  })
+  output$package_text <- renderUI({
+    HTML(paste("<b>R:</b> <a href='https://www.r-project.org/'>version 2.4.1</a> (Funny-Looking Kid), released on 2022-06-23.",
+               "<b>RStudio:</b> <a href='https://www.rstudio.com/products/rstudio/download/#download'>version 2022.07.1+554</a>, an IDE used to write this shinyapp.",
+               "<b>Tidyverse:</b>",
+               "<b>Shiny:</b>",
+               "<b>Shinydashboard:</b>",
+               "<b>DT:</b> used to create the interactive data tables. Find more information <a href='https://rstudio.github.io/DT/'>here</a>.",
+               sep="<br><br>"))
+  })
+  output$author_text <- renderUI({
+    HTML(paste("Made by <b>Ronan Potts</b> at the University of Sydney for
+               PHYS2923 in Semester 2, 2022.", sep="<br><br>"))
+  })
+  
+  
+  # Other
+  
   f_data <- reactive({
     f_data <- read.csv(paste(filePath,paste(input$fileName,".txt",sep=""), sep=""),sep=',')
     colnames(f_data) = colnames
