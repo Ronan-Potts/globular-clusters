@@ -1,5 +1,10 @@
+# to do:
+
+# bring all visualisations into a singlebdrop-down menu, create a home screen
+
 library(shiny)
 library(tidyverse)
+library(shinydashboardPlus)
 library(shinydashboard)
 
 filePath <- "data/clean-clusters/catalogues/"
@@ -38,11 +43,11 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
   
   dashboardSidebar(
     sidebarMenu(
-      menuItem(text="Globular Cluster", tabName="globular-cluster"),
-      menuItem(text="2D Statistic Histogram", tabName="stat2Dhist"),
-      menuItem(text="Scatter Plot", tabName="scatter-plot"),
-      menuItem(text="Binned X Scatter Plot", tabName="binx-scatter-plot"),
-      menuItem(text="Histogram", tabName="hist")
+      menuItem(text="Globular Cluster", icon=icon("database"), tabName="globular-cluster"),
+      menuItem(text="2D Statistic Histogram", icon=icon("image"), tabName="stat2Dhist"),
+      menuItem(text="Scatter Plot", icon=icon("image"), tabName="scatter-plot"),
+      menuItem(text="Binned X Scatter Plot", icon=icon("image"), tabName="binx-scatter-plot"),
+      menuItem(text="Histogram", icon=icon("image"), tabName="hist")
     )),
   
   dashboardBody(
