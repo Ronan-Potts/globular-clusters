@@ -45,10 +45,24 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
       menuItem(text="Histogram", tabName="hist")
     )),
   
-  dashboardBody(height="10px",
+  dashboardBody(
+    tags$style(HTML(".box-header {
+                                      color:#fff;
+                                      border-style:solid;
+                                      border-color:#3c8dbc;
+                                      border-width:2px;
+                                      background:#2b6179
+                                      }"),
+               HTML(".box {
+                                      border-style:solid;
+                                      border-color:#3c8dbc;
+                                      border-width:2px;
+                                      border-top-width:0px;
+                                      }")
+    ),
     tabItems(
       tabItem(tabName="globular-cluster",
-             box(width=12,
+             box(width=12, title="Controls",
                column(width=3,
                  selectInput("fileName",
                              "Select a Globular Cluster:",
@@ -56,10 +70,11 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                              selected="NGC_5139_oCen")),
                column(width=9,
                  DT::dataTableOutput("aggregateData", width="100%"))),
-             DT::dataTableOutput("dataTable", width="100%")
+             box(width=12, title="Data Table",
+             DT::dataTableOutput("dataTable", width="100%"))
       ),
       tabItem(tabName="stat2Dhist",
-            box(width=12,
+            box(width=12, title="Controls",
               column(width=3,
                selectInput("x2dstat",
                            "Select X Variable",
@@ -83,10 +98,10 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                      sliderInput("statistic_min_max", label = h3("Statistic Range"), min = 0, 
                                  max = 1, value=c(0, 1)))
             ),
-            fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("stat2DHist", width="100%")),column(1),height="530px"))
+            fluidRow(box(width=12,title="2D Histogram", column(1),column(10, align="center", plotOutput("stat2DHist", width="100%")),column(1),height="650px"))
     ),
     tabItem(tabName='scatter-plot', align="center",
-          box(width=12,
+          box(width=12, title="Controls",
             column(width=4,
              selectInput("xvar",
                          "Select X Variable:",
@@ -105,28 +120,30 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
             column(width=12,
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
                          max = 1, value = c(0.95, 1)))),
-          fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("distPlot", width="100%")),column(1),height="530px"))
+          fluidRow(box(title="Scatter Plot", width=12,column(1),column(10, align="center", plotOutput("distPlot", width="100%")),column(1),height="650px"))
     ),
     tabItem(tabName='binx-scatter-plot', align="center",
-            box(width=12,
-                column(width=4,
+            box(width=12, title="Controls",
+                column(width=3,
                        selectInput("binscat_xvar",
                                    "Select X Variable:",
                                    choices = colnames(f_data),
                                    selected="Radius (mas)")),
-                column(width=4,
+                column(width=3,
                        selectInput("binscat_yvar",
                                    "Select Y Variable:",
                                    choices = colnames(f_data),
                                    selected="Tangential Velocity (mas/yr)")),
-            column(width=4,
+            column(width=3,
                    sliderInput("binscat_bins",
                                "Bins",
-                               min=1, max=500, value=50, step=1))),
-            fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("binnedScatter", width="100%")),column(1),height="530px"))
+                               min=1, max=500, value=50, step=1)),
+            column(width=3,
+                   checkboxInput("binscat_fit", "Fit Curve", value=TRUE))),
+            fluidRow(box(title="Binned-X Scatter Plot", width=12,column(1),column(10, align="center", plotOutput("binnedScatter", width="100%")),column(1),height="650px"))
     ),
     tabItem(tabName="hist",
-            box(width=12,
+            box(width=12, title="Controls",
              selectInput("histX",
                          "Select Histogram Variable",
                          choices = colnames(f_data),
@@ -134,7 +151,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
              shiny::checkboxInput("norm",
                                   "Normalise Distribution",
                                   value = TRUE)),
-            fluidRow(box(width=12,column(1),column(10, align="center", plotOutput("histPlot", width="100%")),column(1),height="530px"))
+            fluidRow(box(title="Histogram", width=12,column(1),column(10, align="center", plotOutput("histPlot", width="100%")),column(1),height="650px"))
     ))
   )
   
@@ -207,20 +224,64 @@ server <- function(input, output, session) {
     0.5*session$clientData$output_stat2DHist_width
   })
   
+  
+  # Binned-X Scatter Plot
   output$binnedScatter <- renderPlot({
-    f_data = f_data()
-    f_data = f_data |>
+    # If you want to fit a curve:
+    if (input$binscat_fit) {
+      # Bin x values and calculate mean/se of data in each x bin
+      f_data = f_data() |>
+        mutate(binned_data = cut(get(input$binscat_xvar), breaks=input$binscat_bins)) |>
+        group_by(binned_data) |>
+        summarise(y_data = mean(get(input$binscat_yvar)), se = sd(get(input$binscat_yvar))/sqrt(n()))
+      # Replace levels in binned data with numbers
+      levels(f_data$binned_data) <- gsub("\\(.+,|]", "", levels(f_data$binned_data))
+      # Make binned X values numeric
+      f_data$binned_data = as.numeric(as.character(f_data$binned_data))
+      
+      # non-linear regression (nls) on data using eq 1 from https://arxiv.org/pdf/1305.6025.pdf
+      variables = nls(y_data ~ I(E-(omega*binned_data)/(1+b*(binned_data^(2*cpow)))), data=f_data, start=list(E=0, omega=2, b=50, cpow=1))
+      
+      # Extract constants from NLS
+      E = coef(variables)[1]
+      omega = coef(variables)[2]
+      b = coef(variables)[3]
+      cpow = coef(variables)[4]
+      
+      # Add rows containing y values of fitted curve at each x value, and the ribbon y range
+      f_data = f_data |>
+        mutate(y_val = I(E-(omega*binned_data)/(1+b*(binned_data^(2*cpow))))) |>
+        mutate(y_min = y_val - se, y_max = y_val + se)
+      
+      # Plot curve
+      f_data |>
+        ggplot(aes(x=binned_data, y=y_data)) +
+        geom_point(colour="#00c3ff") +  labs(x=input$binscat_xvar, y=input$binscat_yvar) +
+        geom_function(fun = function(x) I(E-(omega*x)/(1+b*(x^(2*cpow))))) +
+        geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2)
+    } else {
+    # Bin x values and calculate mean/se of data in each x bin
+    f_data = f_data() |>
       mutate(binned_data = cut(get(input$binscat_xvar), breaks=input$binscat_bins)) |>
       group_by(binned_data) |>
-      summarise(y_data = mean(get(input$binscat_yvar)))
+      summarise(y_data = mean(get(input$binscat_yvar)), se = sd(get(input$binscat_yvar))/sqrt(n()))
+    # Replace levels in binned data with numbers
     levels(f_data$binned_data) <- gsub("\\(.+,|]", "", levels(f_data$binned_data))
+    # Make binned X values numeric
+    f_data$binned_data = as.numeric(as.character(f_data$binned_data))
+    
+    
+    # Add rows containing the ribbon y range
+    f_data = f_data |>
+      mutate(y_min = y_data - se, y_max = y_data + se)
+    
+    # Plot curve
     f_data |>
       ggplot(aes(x=binned_data, y=y_data)) +
       geom_point(colour="#00c3ff") + 
-      labs(x=input$binscat_xvar, y=input$binscat_yvar) + 
-      scale_x_discrete(breaks = levels(f_data$binned_data)[floor(seq(1, 
-                                                         nlevels(f_data$binned_data), 
-                                                         length.out = 10))])
+      labs(x=input$binscat_xvar, y=input$binscat_yvar) +
+      geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2)
+    }
   }, height = function() {
     0.5*session$clientData$output_binnedScatter_width
   })
