@@ -34,10 +34,10 @@ for fileName in fileNames:
     f_data['vPhi'] = (f_data['x']*f_data['vy']-f_data['y']*f_data['vx'])/f_data['r']
 
     # Remove useless columns (qflag, Sigma, bp_rp, g_mag)
-    f_data = f_data.drop(['bp_rp', 'qflag', 'Sigma', 'g_mag'], axis=1)
+    f_data = f_data.drop(['qflag', 'Sigma'], axis=1)
 
     # Reorder columns
-    ordered_cols = ['# source_id', 'ra', 'dec', 'pmra', 'pmdec', 'x', 'y', 'r', 'vx', 'vy', 'vR', 'vPhi', 'plx', 'memberprob', 'pmcorr', 'pmrae', 'pmdece', 'plxe']
+    ordered_cols = ['# source_id', 'ra', 'dec', 'pmra', 'pmdec', 'x', 'y', 'r', 'vx', 'vy', 'vR', 'vPhi', 'plx', 'memberprob', 'pmcorr', 'pmrae', 'pmdece', 'plxe', 'g_mag', 'bp_rp']
     f_data = f_data[ordered_cols]
 
     if fileName == "Pal_5.txt":
