@@ -47,7 +47,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
       selectInput("fileName",
                   "Select a Globular Cluster:",
                   choices = fileNames,
-                  selected="NGC_5139_oCen"),
+                  selected="NGC_6752"),
       menuItem(text="Home", icon=icon("house"), tabName="home"),
       menuItem(text="Globular Cluster", icon=icon("database"), tabName="globular-cluster"),
       menuItem(text="Visualisations", icon=icon("image"), tabName="visualisations",
@@ -85,8 +85,10 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
       tabItem(tabName="globular-cluster",
              box(width=12, title="Summary",
                  DT::dataTableOutput("aggregateData", width="100%")),
-             box(width=12, title="Data Table",
-             DT::dataTableOutput("dataTable", width="100%"))
+             fluidRow(
+               box(width=12, title="Data Table",
+                   DT::dataTableOutput("dataTable", width="100%"))
+             )
       ),
       tabItem(tabName="stat2Dhist",
             box(width=12, title="Controls",
@@ -113,9 +115,9 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                      sliderInput("statistic_min_max", label = h3("Statistic Range"), min = 0, 
                                  max = 1, value=c(0, 1)))
             ),
-            fluidRow(box(width=12,title="2D Histogram", column(1),column(10, align="center", plotOutput("stat2DHist", width="100%")),column(1),height="650px"))
+            fluidRow(box(width=12,title="2D Histogram", align="center", plotOutput("stat2DHist", width="100%"), height="650px"))
     ),
-    tabItem(tabName='scatter-plot', align="center",
+    tabItem(tabName='scatter-plot',
           box(width=12, title="Controls",
             column(width=4,
              selectInput("xvar",
@@ -135,9 +137,12 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
             column(width=12,
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
                          max = 1, value = c(0.95, 1)))),
-          fluidRow(box(title="Scatter Plot", width=12,column(1),column(10, align="center", plotOutput("distPlot", width="100%")),column(1),height="650px"))
+          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="650px"))
     ),
-    tabItem(tabName='binx-scatter-plot', align="center",
+    tabItem(tabName='binx-scatter-plot',
+            box(width=12, title="Rotating Stars",
+                htmlOutput("rotating_stars_txt"),
+                DT::dataTableOutput("rotating_stars", width="100%")),
             box(width=12, title="Controls",
                 column(width=3,
                        selectInput("binscat_xvar",
@@ -155,7 +160,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                                min=1, max=500, value=50, step=1)),
             column(width=3,
                    checkboxInput("binscat_fit", "Fit Curve", value=TRUE))),
-            fluidRow(box(title="Binned-X Scatter Plot", width=12,column(1),column(10, align="center", plotOutput("binnedScatter", width="100%")),column(1),height="650px"))
+            fluidRow(box(title="Binned-X Scatter Plot", width=12, align="center", plotOutput("binnedScatter", width="100%"),height="650px"))
     ),
     tabItem(tabName="hist",
             box(width=12, title="Controls",
@@ -166,7 +171,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
              shiny::checkboxInput("norm",
                                   "Normalise Distribution",
                                   value = TRUE)),
-            fluidRow(box(title="Histogram", width=12,column(1),column(10, align="center", plotOutput("histPlot", width="100%")),column(1),height="650px"))
+            fluidRow(box(title="Histogram", width=12, align="center", plotOutput("histPlot", width="100%"),height="650px"))
     ))
   )
   
@@ -188,15 +193,23 @@ server <- function(input, output, session) {
   output$package_text <- renderUI({
     HTML(paste("<b>R:</b> <a href='https://www.r-project.org/'>version 2.4.1</a> (Funny-Looking Kid), released on 2022-06-23.",
                "<b>RStudio:</b> <a href='https://www.rstudio.com/products/rstudio/download/#download'>version 2022.07.1+554</a>, an IDE used to write this shinyapp.",
-               "<b>Tidyverse:</b>",
-               "<b>Shiny:</b>",
-               "<b>Shinydashboard:</b>",
+               "<b>Tidyverse:</b> heavily used to create graphs using <b>ggplot2</b>, clean data with <b>dplyr</b> and <b>tidyr</b> and more.",
+               "<b>Shiny:</b> used as the scaffolds for this web application.",
+               "<b>Shinydashboard:</b> used to beautify the web application by adding a menu on the left side of the page, and a header on the top side of the page.",
                "<b>DT:</b> used to create the interactive data tables. Find more information <a href='https://rstudio.github.io/DT/'>here</a>.",
                sep="<br><br>"))
   })
   output$author_text <- renderUI({
     HTML(paste("Made by <b>Ronan Potts</b> at the University of Sydney for
                PHYS2923 in Semester 2, 2022.", sep="<br><br>"))
+  })
+  
+  output$rotating_stars_txt <- renderUI({
+    HTML(paste("To visualise some more interesting <b>rotating stars</b>, use any of the globular clusters defined below.", sep="<br><br>"))
+  })
+  output$rotating_stars <- DT::renderDataTable({
+    gc_summary = read.csv("data/clean-clusters/GCs_Summary_2.txt", sep=",")
+    DT::datatable(gc_summary[gc_summary$rotating == 1,], rownames=FALSE, options = list(scrollX=TRUE))
   })
   
   
@@ -218,15 +231,17 @@ server <- function(input, output, session) {
   })
   
   output$aggregateData <- DT::renderDataTable({
-    mean_RA = signif(mean(f_data()[,2]), digits=6)
-    mean_Dec = signif(mean(f_data()[,3]), digits=6)
-    mean_PMRA = signif(mean(f_data()[,4]), digits=6)
-    mean_PMDEC = signif(mean(f_data()[,5]), digits=6)
-    R_sun = signif(mean(h_data()[h_data()[,"Name"]==paste(input$fileName,".txt",sep=''),6]), digits=6)
-    disp_table <- as.data.frame(matrix(c(mean_RA, mean_Dec, mean_PMRA, mean_PMDEC, R_sun), byrow=TRUE, nrow=1))
-    colnames(disp_table) = c("Right Ascension (deg)", "Declination (deg)", "RA Proper Motion (mas/yr)", "Dec. Proper Motion (mas/yr)", "Distance from Sun (kPc)")
+    f_data = f_data()
+    h_data = h_data()
+    mean_RA = signif(mean(f_data[,2]), digits=6)
+    mean_Dec = signif(mean(f_data[,3]), digits=6)
+    mean_PMRA = signif(mean(f_data[,4]), digits=6)
+    mean_PMDEC = signif(mean(f_data[,5]), digits=6)
+    num_stars = length(f_data[,1])
+    R_sun = signif(mean(h_data[h_data[,"Name"]==paste(input$fileName,".txt",sep=''),6]), digits=6)
+    disp_table <- as.data.frame(matrix(c(mean_RA, mean_Dec, mean_PMRA, mean_PMDEC, R_sun, num_stars), byrow=TRUE, nrow=1))
+    colnames(disp_table) = c("Right Ascension (deg)", "Declination (deg)", "RA Proper Motion (mas/yr)", "Dec. Proper Motion (mas/yr)", "Distance from Sun (kPc)", "Number of Stars")
     DT::datatable(disp_table, options=list(dom='t'), rownames=FALSE)
-    
   })
   
   output$distPlot <- renderPlot({
@@ -280,6 +295,7 @@ server <- function(input, output, session) {
     mas_to_rad = (2*pi)/(360*3600*1000)
     kPc_to_km = 3.086e+16
     yr_to_s = 60*60*24*365
+    num_stars = length(f_data()[,1])
     # If you want to fit a curve:
     if (input$binscat_fit) {
       # Bin x values and calculate mean/se of data in each x bin
@@ -321,6 +337,18 @@ server <- function(input, output, session) {
         p = p + scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Tangential Velocity (km/s)"))
       } else if (input$binscat_yvar == "Radial Velocity (mas/yr)"){
         p = p + scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Radial Velocity (km/s)"))
+      }
+      
+      if (input$binscat_fit == TRUE){
+        v_p = max(abs(f_data$y_val-E))
+        v_p = as.numeric(f_data[abs(f_data$y_val-E) == v_p, "y_val"])
+        error = as.numeric(f_data[f_data$y_val == v_p, "se"])
+        x_p = as.numeric(f_data[f_data$y_val == v_p, "binned_data"])
+        if (v_p > 0) {
+          p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p + 1.5*error)
+        } else {
+        p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p - 1.5*error)
+        }
       }
       p
     } else {
