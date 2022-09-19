@@ -29,8 +29,8 @@ colnames = c("Source ID",
              "RA Proper Motion Uncertainty (mas/yr)",
              "Dec. Proper Motion Uncertainty (mas/yr)",
              "Parallax Uncertainty (mas)",
-             "G",
-             "BP - RP")
+             "G (brightness)",
+             "BP - RP (colour)")
 
 
 
@@ -123,21 +123,21 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
              selectInput("xvar",
                          "Select X Variable:",
                          choices = colnames(f_data),
-                         selected="Declination (deg)")),
+                         selected="BP - RP (colour)")),
              column(width=4,
              selectInput("yvar",
                          "Select Y Variable:",
                          choices = colnames(f_data),
-                         selected="Right Ascension (deg)")),
+                         selected="G (brightness)")),
             column(width=4,
              selectInput("colorvar",
                          "Select Colour Variable:",
                          choices = colnames(f_data),
-                         selected="Membership Probability")),
+                         selected="BP - RP (colour)")),
             column(width=12,
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
                          max = 1, value = c(0.95, 1)))),
-          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="650px"))
+          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="680px"))
     ),
     tabItem(tabName='binx-scatter-plot',
             box(width=12, title="Rotating Stars",
@@ -245,10 +245,20 @@ server <- function(input, output, session) {
   })
   
   output$distPlot <- renderPlot({
-    f_data() |>
+    p = f_data() |>
       ggplot(aes(x=.data[[input$xvar]], y=.data[[input$yvar]], color=.data[[input$colorvar]])) +
       geom_point() + 
       scale_color_continuous(limits=input$color_min_max, na.value = "transparent")
+    
+    if (input$yvar == "G (brightness)") {
+      p = p + scale_y_reverse()
+    }
+    
+    if (input$colorvar == "BP - RP (colour)") {
+      p = p + scale_color_gradientn(colors=rainbow(10), na.value = "transparent")
+    }
+    
+    p
   }, height = function() {
     0.5*session$clientData$output_distPlot_width
   })
