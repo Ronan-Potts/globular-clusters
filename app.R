@@ -4,8 +4,11 @@
 # Look at the link below for an understanding of the colour magnitude diagram.
 # https://physics.weber.edu/palen/clearinghouse/labs/Clusterhr/color_mag.html
 
-# Look at the link below to fit and understand isochrones.
-# http://voyages.sdss.org/expeditions/expedition-to-the-milky-way/star-clusters/isochrone-fitting/
+# Look at the link below to understand isochrones.
+# http://voyages.sdss.org/expeditions/expedition-to-the-milky-way/star-clusters/isochrone-fitting
+
+# Look at the link below to fit isochrones
+# https://astronomy.stackexchange.com/questions/34526/how-to-evaluate-the-fit-of-an-isochrone-to-a-stellar-population
 
 
 
@@ -84,23 +87,24 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
     ),
     tabItems(
       tabItem(tabName="home",
-              box(width=12, title="Introduction to Data",
-                  htmlOutput("intro_text")),
-              box(width=12, title="Packages & Versions",
-                  htmlOutput("package_text")),
-              box(width=12, title="Author",
-                  htmlOutput("author_text"))
+              fluidRow(box(width=12, title="Introduction to Data",
+                  htmlOutput("intro_text"))),
+              fluidRow(box(width=12, title="Packages & Versions",
+                  htmlOutput("package_text"))),
+              fluidRow(box(width=12, title="Author",
+                  htmlOutput("author_text")))
       ),
       tabItem(tabName="globular-cluster",
-             box(width=12, title="Summary",
-                 DT::dataTableOutput("aggregateData", width="100%")),
+             fluidRow(box(width=12, title="Summary",
+                 DT::dataTableOutput("aggregateData", width="100%"))
+             ),
              fluidRow(
                box(width=12, title="Data Table",
                    DT::dataTableOutput("dataTable", width="100%"))
              )
       ),
       tabItem(tabName="stat2Dhist",
-            box(width=12, title="Controls",
+            fluidRow(box(width=12, title="Controls",
               column(width=3,
                selectInput("x2dstat",
                            "Select X Variable",
@@ -123,36 +127,40 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
               column(width=12,
                      sliderInput("statistic_min_max", label = h3("Statistic Range"), min = 0, 
                                  max = 1, value=c(0, 1)))
+              )
             ),
-            fluidRow(box(width=12,title="2D Histogram", align="center", plotOutput("stat2DHist", width="100%"), height="650px"))
+            fluidRow(box(width=12,title="2D Histogram", align="center", plotOutput("stat2DHist", width="100%"), height="700px"))
     ),
     tabItem(tabName='scatter-plot',
-          box(width=12, title="Controls",
-            column(width=4,
+          fluidRow(box(width=12, title="Controls",
+            column(width=3,
              selectInput("xvar",
                          "Select X Variable:",
                          choices = colnames(f_data),
                          selected="BP - RP (colour)")),
-             column(width=4,
+             column(width=3,
              selectInput("yvar",
                          "Select Y Variable:",
                          choices = colnames(f_data),
                          selected="G (brightness)")),
-            column(width=4,
+            column(width=3,
              selectInput("colorvar",
                          "Select Colour Variable:",
                          choices = colnames(f_data),
                          selected="BP - RP (colour)")),
+            column(width=3,
+                   uiOutput("scatter_controls")),
             column(width=12,
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
-                         max = 1, value = c(0.95, 1)))),
-          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="680px"))
+                         max = 1, value = c(0.95, 1))))),
+          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="700px")),
+          uiOutput("scatter_isofit")
     ),
     tabItem(tabName='binx-scatter-plot',
-            box(width=12, title="Rotating Stars",
+            fluidRow(box(width=12, title="Rotating Stars",
                 htmlOutput("rotating_stars_txt"),
-                DT::dataTableOutput("rotating_stars", width="100%")),
-            box(width=12, title="Controls",
+                DT::dataTableOutput("rotating_stars", width="100%"))),
+            fluidRow(box(width=12, title="Controls",
                 column(width=3,
                        selectInput("binscat_xvar",
                                    "Select X Variable:",
@@ -163,24 +171,24 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                                    "Select Y Variable:",
                                    choices = colnames(f_data),
                                    selected="Tangential Velocity (mas/yr)")),
-            column(width=3,
-                   sliderInput("binscat_bins",
-                               "Bins",
-                               min=1, max=500, value=50, step=1)),
-            column(width=3,
-                   checkboxInput("binscat_fit", "Fit Curve", value=TRUE))),
-            fluidRow(box(title="Binned-X Scatter Plot", width=12, align="center", plotOutput("binnedScatter", width="100%"),height="650px"))
+                column(width=3,
+                       sliderInput("binscat_bins",
+                                   "Bins",
+                                   min=1, max=500, value=50, step=1)),
+                column(width=3,
+                       checkboxInput("binscat_fit", "Fit Curve", value=TRUE)))),
+            fluidRow(box(title="Binned-X Scatter Plot", width=12, align="center", plotOutput("binnedScatter", width="100%"),height="700px"))
     ),
     tabItem(tabName="hist",
-            box(width=12, title="Controls",
-             selectInput("histX",
-                         "Select Histogram Variable",
-                         choices = colnames(f_data),
-                         selected="Declination (deg)"),
-             shiny::checkboxInput("norm",
-                                  "Normalise Distribution",
-                                  value = TRUE)),
-            fluidRow(box(title="Histogram", width=12, align="center", plotOutput("histPlot", width="100%"),height="650px"))
+            fluidRow(box(width=12, title="Controls",
+               selectInput("histX",
+                           "Select Histogram Variable",
+                           choices = colnames(f_data),
+                           selected="Declination (deg)"),
+               shiny::checkboxInput("norm",
+                                    "Normalise Distribution",
+                                    value = TRUE))),
+            fluidRow(box(title="Histogram", width=12, align="center", plotOutput("histPlot", width="100%"),height="700px"))
     ))
   )
   
@@ -231,7 +239,7 @@ server <- function(input, output, session) {
   })
   
   h_data <- reactive({
-    h_data <- read.csv("data/clusters-harris/clean/id_position_data.txt")
+    h_data <- read.csv("data/clusters-harris/clean/merged_data.txt")
     h_data
   })
   
@@ -429,6 +437,25 @@ server <- function(input, output, session) {
                       value = c(min_stat2d, max_stat2d))
   })
   
+  
+  
+  # Isochrone fitting
+  
+  output$scatter_controls <- renderUI({
+    if (input$xvar == "BP - RP (colour)" & input$yvar == "G (brightness)"){
+      checkboxInput("scatter_isochrone_fit", "Fit Isochrone(s) to Data?", value=TRUE)
+    } else {
+      
+    }
+  })
+  
+  output$scatter_isofit <- renderUI({
+    if (input$scatter_isochrone_fit) {
+      fluidRow(box(title="Fitting Isochrones", width=12,
+          HTML(paste("Isochrones were fit using advice from <a href='https://astronomy.stackexchange.com/questions/34526/how-to-evaluate-the-fit-of-an-isochrone-to-a-stellar-population'>this stackexchange.com page</a> by finding the best fitting isochrone model from the <a href='http://stellar.dartmouth.edu/models/isolf_new.html'>Dartmouth Database</a>.", sep="<br><br>"))
+      ))
+    }
+  })
   
 }
 
