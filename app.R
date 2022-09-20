@@ -1,6 +1,15 @@
-# to do:
+# Colour magnitude diagram:
 
-# fix box height
+
+# Look at the link below for an understanding of the colour magnitude diagram.
+# https://physics.weber.edu/palen/clearinghouse/labs/Clusterhr/color_mag.html
+
+# Look at the link below to fit and understand isochrones.
+# http://voyages.sdss.org/expeditions/expedition-to-the-milky-way/star-clusters/isochrone-fitting/
+
+
+
+
 
 library(shiny)
 library(tidyverse)
