@@ -154,7 +154,12 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
                          max = 1, value = c(0.95, 1))))),
           fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="700px")),
-          uiOutput("scatter_isofit")
+          fluidRow(box(title="Fitting Isochrones", width=12,
+                       uiOutput("scatter_isofit_1"),
+                       DT::dataTableOutput("scatter_isofit_2")
+                       )
+                   )
+          
     ),
     tabItem(tabName='binx-scatter-plot',
             fluidRow(box(width=12, title="Rotating Stars",
@@ -449,11 +454,37 @@ server <- function(input, output, session) {
     }
   })
   
-  output$scatter_isofit <- renderUI({
-    if (input$scatter_isochrone_fit) {
-      fluidRow(box(title="Fitting Isochrones", width=12,
-          HTML(paste("Isochrones were fit using advice from <a href='https://astronomy.stackexchange.com/questions/34526/how-to-evaluate-the-fit-of-an-isochrone-to-a-stellar-population'>this stackexchange.com page</a> by finding the best fitting isochrone model from the <a href='http://stellar.dartmouth.edu/models/isolf_new.html'>Dartmouth Database</a>.", sep="<br><br>"))
-      ))
+  output$scatter_isofit_1 <- renderUI({
+    if (input$scatter_isochrone_fit & input$xvar == "BP - RP (colour)" & input$yvar == "G (brightness)") {
+        HTML(paste("Isochrones are used here to segment globular clusters into groups
+                   based on age. Isochrones depict regions which encompass stars with
+                   similar ages.",
+                   "Isochrones were fit using advice from 
+                   <a href='https://astronomy.stackexchange.com/questions/34526/how-to-evaluate-the-fit-of-an-isochrone-to-a-stellar-population'>this stackexchange.com page</a>
+                   by finding the best fitting isochrone model from the 
+                   <a href='http://stellar.dartmouth.edu/models/isolf_new.html'>Dartmouth Database</a>.
+                   This database requires that we at least know [Fe/H], , which are
+                   given for the selected globular cluster in the table below.",
+                   sep="<br><br>"))
+    } else {
+      HTML(paste("Isochrones are used here to segment globular clusters into groups
+                 based on age. Isochrones depict regions which encompass stars with
+                 similar ages. To see more, set X Variable = 'BP - RP (colour)', Y Variable =
+                 'G (brightness)', and check the 'Fit Isochrone(s) to Data?' box",
+                 sep="<br><br>"))
+    }
+  })
+  
+  output$scatter_isofit_2 <- DT::renderDataTable({
+    if (input$scatter_isochrone_fit & input$xvar == "BP - RP (colour)" & input$yvar == "G (brightness)") {
+      gc_summary = read.csv("data/clean-clusters/GCs_Summary_2.txt", sep=",") |>
+        filter(rotating == 1)
+      
+      h_data() |>
+        select("Name", "X.Fe.H.") |>
+        rename("[Fe/H]" = "X.Fe.H.") |>
+        filter(Name == paste(input$fileName, ".txt", sep="")) |>
+        DT::datatable(options=list(dom='t'), rownames=FALSE)
     }
   })
   
