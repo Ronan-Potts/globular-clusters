@@ -230,11 +230,11 @@ server <- function(input, output, session) {
   })
   
   output$rotating_stars_txt <- renderUI({
-    HTML(paste("To visualise some more interesting <b>rotating stars</b>, use any of the globular clusters defined below.", sep="<br><br>"))
+    HTML(paste("To visualise some more interesting <b>stars which may be rotating</b>, use any of the globular clusters defined below. In particular, consider NGC_6266_M62, NGC_6139, NGC_7078_M_15, NGC_7089_M_2, and any stars with rotating = 1.", sep="<br><br>"))
   })
   output$rotating_stars <- DT::renderDataTable({
     gc_summary = read.csv("data/clean-clusters/GCs_Summary_2.txt", sep=",")
-    DT::datatable(gc_summary[gc_summary$rotating == 1,], rownames=FALSE, options = list(scrollX=TRUE))
+    DT::datatable(gc_summary[abs(as.numeric(gc_summary$`vPhi.vR`)) >= 3 & as.numeric(gc_summary$size) >= 1000,], rownames=FALSE, options = list(scrollX=TRUE))
   })
   
   

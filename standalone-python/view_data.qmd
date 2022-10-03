@@ -84,7 +84,7 @@ display(Markdown("""
 
   * **pmcorr:** correlation coefficient between the two proper motion uncertainties;
 
-  * **g_map:** G-band magnitude;
+  * **g_mag:** G-band magnitude;
 
   * **bp_rp:** BP-RP;
 
