@@ -150,15 +150,18 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                          selected="BP - RP (colour)")),
             column(width=3,
                    uiOutput("scatter_controls")),
-            column(width=12,
+            column(width=6,
              sliderInput("color_min_max", label = h3("Colorbar Range"), min = 0, 
-                         max = 1, value = c(0.95, 1))))),
-          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="700px")),
+                         max = 1, value = c(0.95, 1))),
+            column(width=6,
+                   sliderInput("alphavar", label = h3("Transparency"), min = 0, 
+                               max = 1, value = 0.1))
+            )),
           fluidRow(box(title="Fitting Isochrones", width=12,
-                       uiOutput("scatter_isofit_1"),
-                       DT::dataTableOutput("scatter_isofit_2")
-                       )
-                   )
+                       uiOutput("scatter_isofit_1")
+          )
+          ),
+          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px"))
           
     ),
     tabItem(tabName='binx-scatter-plot',
@@ -267,10 +270,10 @@ server <- function(input, output, session) {
   })
   
   output$distPlot <- renderPlot({
-    p = f_data() |>
+    f_data = f_data()
+    p = f_data |>
       ggplot(aes(x=.data[[input$xvar]], y=.data[[input$yvar]], color=.data[[input$colorvar]])) +
-      geom_point() + 
-      scale_color_continuous(limits=input$color_min_max, na.value = "transparent")
+      geom_point(alpha=input$alphavar)
     
     if (input$yvar == "G (brightness)") {
       p = p + scale_y_reverse()
@@ -278,6 +281,8 @@ server <- function(input, output, session) {
     
     if (input$colorvar == "BP - RP (colour)") {
       p = p + scale_color_gradientn(colors=rainbow(10), na.value = "transparent")
+    } else {
+      p = p + scale_color_continuous(limits=input$color_min_max, na.value = "transparent")
     }
     
     p
@@ -461,10 +466,8 @@ server <- function(input, output, session) {
                    similar ages.",
                    "Isochrones were fit using advice from 
                    <a href='https://astronomy.stackexchange.com/questions/34526/how-to-evaluate-the-fit-of-an-isochrone-to-a-stellar-population'>this stackexchange.com page</a>
-                   by finding the best fitting isochrone model from the 
-                   <a href='http://stellar.dartmouth.edu/models/isolf_new.html'>Dartmouth Database</a>.
-                   This database requires that we at least know [Fe/H], , which are
-                   given for the selected globular cluster in the table below.",
+                   by generating a range of isochrones from
+                   <a href='http://stev.oapd.inaf.it/cgi-bin/cmd'>the CMD 3.6 input form</a>.",
                    sep="<br><br>"))
     } else {
       HTML(paste("Isochrones are used here to segment globular clusters into groups
@@ -472,19 +475,6 @@ server <- function(input, output, session) {
                  similar ages. To see more, set X Variable = 'BP - RP (colour)', Y Variable =
                  'G (brightness)', and check the 'Fit Isochrone(s) to Data?' box",
                  sep="<br><br>"))
-    }
-  })
-  
-  output$scatter_isofit_2 <- DT::renderDataTable({
-    if (input$scatter_isochrone_fit & input$xvar == "BP - RP (colour)" & input$yvar == "G (brightness)") {
-      gc_summary = read.csv("data/clean-clusters/GCs_Summary_2.txt", sep=",") |>
-        filter(rotating == 1)
-      
-      h_data() |>
-        select("Name", "X.Fe.H.") |>
-        rename("[Fe/H]" = "X.Fe.H.") |>
-        filter(Name == paste(input$fileName, ".txt", sep="")) |>
-        DT::datatable(options=list(dom='t'), rownames=FALSE)
     }
   })
   
