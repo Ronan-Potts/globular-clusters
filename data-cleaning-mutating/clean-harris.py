@@ -42,7 +42,6 @@ IDs and Positional data ========================================================
 
 # Accessing the file
 filePath = "./data/clusters-harris/raw/"
-fileNames = os.listdir(filePath)
 fileName = "id_position_data.txt"
 
 f_data = pd.read_csv(filePath + fileName, sep="\t", header=0).rename(
@@ -101,7 +100,6 @@ Metallicity and Photometry data ================================================
 
 # Accessing the file
 filePath = "./data/clusters-harris/raw/"
-fileNames = os.listdir(filePath)
 fileName = "metallicity_photometry_data.txt"
 
 f_data = pd.read_csv(filePath + fileName, sep="\t", header=0).rename(
