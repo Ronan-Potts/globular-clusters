@@ -167,3 +167,8 @@ f_data = pd.read_csv(filePath, header=0)
 Z = f_data["[Fe/H]"]
 print("Min:", str(min(Z)), "\nMax:", str(max(Z)))
 ```
+
+
+# Meaning of Parameters in Isochrone Data
+
+* 
