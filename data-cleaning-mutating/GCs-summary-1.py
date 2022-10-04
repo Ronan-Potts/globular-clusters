@@ -21,6 +21,8 @@ mean_x = []
 mean_y = []
 mean_vx = []
 mean_vy = []
+mean_vR = []
+mean_vPhi = []
 size = []
 names = []
 
@@ -45,6 +47,8 @@ for fileName in fileNames:
     mean_y.append(mean_y_mercator)
     mean_vx.append(mean_vx_mercator)
     mean_vy.append(mean_vy_mercator)
+    mean_vR.append(np.mean(f_data['vR']))
+    mean_vPhi.append(np.mean(f_data['vPhi']))
     size.append(len(f_data['ra']))
     names.append(fileName)
 
