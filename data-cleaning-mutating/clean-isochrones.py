@@ -66,7 +66,8 @@ i = 0
 for line in lines:
     if line[0] == "#":
         line = line[2:]
-    lines[i] = re.sub(" +", ",", line)[0:-1].split(",")
+    line = line.strip()
+    lines[i] = re.sub("[ \t]+", ",", line).split(',')
     lines[i] = [line.strip() for line in lines[i]]
     i += 1
 
