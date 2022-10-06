@@ -290,12 +290,19 @@ server <- function(input, output, session) {
   
   output$distPlot <- renderPlot({
     f_data = f_data()
-    p = f_data |>
-      ggplot() +
-      geom_point(alpha=input$alphavar, aes(x=.data[[input$xvar]], y=.data[[input$yvar]], color=.data[[input$colorvar]]))
     
     if (input$yvar == "G (brightness)") {
-      p = p + scale_y_reverse()
+      h_data = h_data()
+      r_pc = 1000*(h_data[h_data$Name == paste(input$fileName, ".txt", sep=""), "R_sun"])
+      dist_mod = 5*log10(r_pc/10)
+      p = f_data |>
+        ggplot() +
+        geom_point(alpha=input$alphavar, aes(x=.data[[input$xvar]], y=.data[[input$yvar]]-dist_mod, color=.data[[input$colorvar]])) +
+        scale_y_reverse() + labs(y="G (brightness - absolute)")
+    } else {
+      p = f_data |>
+        ggplot() +
+        geom_point(alpha=input$alphavar, aes(x=.data[[input$xvar]], y=.data[[input$yvar]], color=.data[[input$colorvar]]))
     }
     
     if (input$colorvar == "BP - RP (colour)") {
@@ -305,8 +312,17 @@ server <- function(input, output, session) {
     }
     
     if (input$scatter_isochrone_fit) {
+      h_data = h_data()
+      r_pc = 1000*(h_data[h_data$Name == paste(input$fileName, ".txt", sep=""), "R_sun"])
+      dist_mod = 5*log10(r_pc/10)
+      max_min = f_data |>
+        mutate(gmag_abs = `G (brightness)` - dist_mod) |>
+        summarise(min = min(gmag_abs), max=max(gmag_abs))
+      max_gmag = max_min$max
+      min_gmag = max_min$min
       isochrone_df = read.csv(paste(isoPath,paste(input$isochrone_fit,".txt",sep=""), sep=""),sep=',') |>
-        mutate(bp_rp = G_BPbrmag - G_RPmag)
+        mutate(bp_rp = G_BPbrmag - G_RPmag) |>
+        filter(Gmag <= max_gmag & Gmag >= min_gmag)
       
       p = p + geom_point(data=isochrone_df, mapping = aes(x=bp_rp, y=Gmag), color='red') + scale_y_reverse()
     }

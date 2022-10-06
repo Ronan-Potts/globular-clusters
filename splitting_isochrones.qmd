@@ -1,0 +1,121 @@
+---
+title: "Splitting Isochrones"
+format: html
+editor: visual
+---
+
+# Introduction
+
+The purpose of this file is to attempt to uncover multiple trendlines in NGC_6752's colour-magnitude diagram, and use this analysis to automate the process for other GCs. The process for doing so is as follows:
+
+1.  Bin the y variable, G-band magnitude, from the colour-magnitude diagram.
+
+2.  For each G-band magnitude bin, construct a BP - RP histogram of the data in that bin.
+
+3.  Identify peaks in the histogram produced during step (2) and fit a normal distribution / student's curve to each peak. Subset the data in the histogram into data for each of the histograms.
+
+4.  Take some horizontal confidence interval around each of the data subsets based on the fitted normal distributions. Use least squares to find a set of isochrones which fit the data.
+
+    **In doing this, maybe define a confidence interval where the difference-squared is zero for any point on the isochrone which lies within the confidence interval of the point.**
+
+# Importing Data & Packages
+
+Packages:
+
+```{r}
+library(tidyverse)
+```
+
+Import `f_data` - the actual data relating to the galaxy clusters at hand.
+
+```{r}
+f_data <- read.csv("./data/clean-clusters/catalogues/NGC_6752.txt", sep=',')
+colnames(f_data) = c("Source ID",
+                     "Right Ascension (deg)",
+                     "Declination (deg)",
+                     "RA Proper Motion (mas/yr)",
+                     "Dec. Proper Motion (mas/yr)",
+                     "Right Ascension Deviation (deg)",
+                     "Declination Deviation (deg)",
+                     "Radius (mas)",
+                     "Relative RA Proper Motion (mas/yr)",
+                     "Relative Dec. Proper Motion (mas/yr)",
+                     "Radial Velocity (mas/yr)",
+                     "Tangential Velocity (mas/yr)",
+                     "Parallax (mas)",
+                     "Membership Probability",
+                     "Corr Coef between RA and Dec. Proper Motion Uncertainties",
+                     "RA Proper Motion Uncertainty (mas/yr)",
+                     "Dec. Proper Motion Uncertainty (mas/yr)",
+                     "Parallax Uncertainty (mas)",
+                     "G (brightness)",
+                     "BP - RP (colour)")
+```
+
+Import Harris data to translate G-band magnitude of `f_data` so that we look at absolute magnitude rather than apparent magnitude.
+
+```{r}
+h_data <- read.csv("./data/clusters-harris/clean/merged_data.txt")
+
+r_pc = 1000*(h_data[h_data$Name == "NGC_6752.txt", "R_sun"])
+dist_mod = 5*log10(r_pc/10)
+
+f_data |>
+  mutate(`G (brightness)` = `G (brightness)` - dist_mod)
+```
+
+# Generating Plot
+
+```{r}
+p = f_data |>
+  ggplot() +
+  geom_point(alpha=0.1,
+             aes(x=`BP - RP (colour)`,
+                 y=`G (brightness)`,
+                 color=`BP - RP (colour)`
+                 )
+             ) +
+  scale_y_reverse() +
+  labs(y="G (brightness - absolute)") +
+  scale_color_gradientn(colors=rainbow(10), na.value = "transparent")
+
+# To fit isochrone:
+
+# max_min = f_data |>
+#   mutate(gmag_abs = `G (brightness)` - dist_mod) |>
+#   summarise(min = min(gmag_abs), max=max(gmag_abs))
+# max_gmag = max_min$max
+# min_gmag = max_min$min
+# isochrone_df = read.csv('./data/isochrones/clean/isochrone_1.txt',sep=',') |>
+#   mutate(bp_rp = G_BPbrmag - G_RPmag) |>
+#   filter(Gmag <= max_gmag & Gmag >= min_gmag)
+# p = p + geom_point(data=isochrone_df, mapping = aes(x=bp_rp, y=Gmag), color='red')
+
+p
+```
+
+# Uncovering Trendlines
+
+## Binning G-band magnitudes
+
+```{r}
+max_min = f_data |>
+  summarise(min = min(`G (brightness)`), max=max(`G (brightness)`))
+max_g = max_min$max
+min_g = max_min$min
+num_bins = round(length(f_data$`Source ID`)/1000) # Enough points per bin for CLT
+
+bin_width = (max_g - min_g) / num_bins
+
+f_data = f_data |>
+  mutate(bin = ceiling((`G (brightness)` - min_g)/bin_width))
+```
+
+## Histogram for Binned Subset
+
+```{r}
+f_data |>
+  subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin)) |>
+  subset(select=c(bin)) |>
+  table()
+```

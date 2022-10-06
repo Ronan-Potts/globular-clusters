@@ -16,17 +16,17 @@ Circumstellar dust (DEFAULT): Using scaling relations as in Marigo et al. (2008)
     for M stars: 60% Silicate + 40% AlOx as in Groenewegen (2006)
     for C stars: 85% AMC + 15% SiC as in Groenewegen (2006)
 
-Interstellar extinction:
+Interstellar extinction (DEFAULT):
 
     Total extinction A_V = 0.0 mag.
     Apply this extinction using extinction coefficients computed star-by-star (except for the OBC case, which uses constant coefficients)
     Adopted extinction curve: Cardelli et al. (1989) + O'Donnell (1994), with R_V = 3.1
 
-Long Period Variability:
+Long Period Variability (DEFAULT):
 
     3. Periods from Trabucchi et al. (2021)
 
-Initial mass function:
+Initial mass function (DEFAULT):
 
     Kroupa (2001, 2002) canonical two-part-power law IMF, corrected for unresolved binaries
 
