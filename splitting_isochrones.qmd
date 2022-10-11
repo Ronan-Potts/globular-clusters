@@ -111,11 +111,69 @@ f_data = f_data |>
   mutate(bin = ceiling((`G (brightness)` - min_g)/bin_width))
 ```
 
+## Table for Binned Data
+
+```{r}
+f_data |>
+  subset(select=c(bin)) |>
+  table() |>
+  as.data.frame()
+```
+
 ## Histogram for Binned Subset
 
 ```{r}
 f_data |>
   subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin)) |>
-  subset(select=c(bin)) |>
-  table()
+  filter(bin == 15) |>
+  ggplot(aes(x=`BP - RP (colour)`)) + geom_histogram()
+```
+
+# Split Data
+
+-   Look for main peak.
+
+-   Plot this peak on color magnitude diagram.
+
+-   If there is another peak, plot this peak too (20% size of main peak).
+
+```{r}
+s_data = f_data |>
+  subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin))
+
+point_gmag = c()
+point_bp_rp = c()
+for (b in sort(unique(s_data$bin))){
+  b_data <- s_data |>
+  filter(bin == b)
+  
+  hist = hist(b_data$`BP - RP (colour)`, plot=FALSE)
+  
+  peaks <- data.frame(hist$counts, hist$mids, mean(b_data$`G (brightness)`)) |>
+    filter(hist.counts >= 0.2*max(hist.counts))
+  
+  colnames(peaks) <- c("counts", "bp_rp", "gmag")
+  
+  point_gmag = append(point_gmag, peaks$gmag)
+  point_bp_rp = append(point_bp_rp, peaks$bp_rp)
+  print(b)
+}
+
+plot(point_bp_rp, point_gmag)
+```
+
+## Single B Value
+
+```{r}
+s_data = f_data |>
+  subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin))  
+b_data <- s_data |>
+  filter(bin == b)
+
+hist = hist(b_data$`BP - RP (colour)`)
+  
+peaks <- data.frame(hist$counts, hist$mids, mean(b_data$`G (brightness)`)) |>
+  filter(hist.counts >= 0.2*max(hist.counts))
+
+colnames(peaks) <- c("counts", "bp_rp", "gmag")
 ```
