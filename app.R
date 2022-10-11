@@ -529,7 +529,7 @@ server <- function(input, output, session) {
       mutate(A_v = 3.1*`E.B.V.`) |>
       subset(select=c("file_name", "E.B.V.", "A_v", "X.Fe.H.", "age"))
     colnames(gc_summary) = c("Globular Cluster", "E(B-V)", "A_v", "[Fe/H]", "Age (Gyr)")
-    DT::datatable(gc_summary, options=list(dom='t'), rownames=FALSE)
+    DT::datatable(gc_summary, rownames=FALSE)
   })
 }
 
