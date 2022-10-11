@@ -166,6 +166,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
             )),
           fluidRow(box(title="Fitting Isochrones", width=12,
                        uiOutput("scatter_isofit_1"),
+                       DT::dataTableOutput("scatter_isofit_2"),
                        selectInput("isochrone_fit",
                                    "What Isochrone do you want to fit?",
                                    choices = fitting_isochrones,
@@ -520,6 +521,16 @@ server <- function(input, output, session) {
     }
   })
   
+  output$scatter_isofit_2 <- DT::renderDataTable({
+    gc_summary = read.csv("data/clean-clusters/GCs_All_Summary.txt", sep=",")
+    rotating_gcs = gc_summary[abs(as.numeric(gc_summary$`vPhi.vR`)) >= 3 & as.numeric(gc_summary$size) >= 1000,"file_name"]
+    gc_summary = gc_summary |>
+      filter(abs(as.numeric(`vPhi.vR`)) >= 3 & as.numeric(size) >= 1000) |>
+      mutate(A_v = 3.1*`E.B.V.`) |>
+      subset(select=c("file_name", "E.B.V.", "A_v", "X.Fe.H.", "age"))
+    colnames(gc_summary) = c("Globular Cluster", "E(B-V)", "A_v", "[Fe/H]", "Age (Gyr)")
+    DT::datatable(gc_summary, options=list(dom='t'), rownames=FALSE)
+  })
 }
 
 # Run the application 

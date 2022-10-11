@@ -79,7 +79,7 @@ for index,row in isochrones_df.iterrows():
     if row[0] == "Zini" and len(isochrone_j) not in [1,0]:
         isochrone_df_j = pd.DataFrame(isochrone_j)
         isochrone_df_j.columns = isochrone_df_j.iloc[0]
-        isochrone_df_j = isochrone_df_j[["Gmag", "G_BPbrmag", "G_BPftmag", "G_RPmag"]]
+        isochrone_df_j = isochrone_df_j[["Gmag", "G_BPbrmag", "G_BPftmag", "G_RPmag", "logAge", "MH"]]
         # Write clean file
         isochrone_df_j.to_csv('./data/isochrones/clean/isochrone_'+str(j)+'.txt', sep=',', index=False, header=0)
         isochrone_j = [row.values]

@@ -103,9 +103,20 @@ colnames(disp_table) = c("file_name", "r_sun", "vPhi/vR", "rotating")
 
 summary_data = read.csv("../data/clean-clusters/GCs_Summary.txt", sep=',')
 
+
+age_df = read.csv("../data/clean-clusters/age.txt", sep=',')
+
 complete_data <- merge(x=summary_data, y=disp_table, by="file_name")
 
-write.csv(complete_data, "../data/clean-clusters/GCs_Summary_2.txt", row.names=FALSE, quote=FALSE)
+# For adding AGE data from https://arxiv.org/pdf/1308.2257.pdf
+complete_data = read.csv("../data/clean-clusters/GCs_Summary_2.txt", sep=',')
+complete_data <- merge(x=complete_data, y=age_df, by.x="file_name", by.y="ngc", all=TRUE)
+
+harris_summary = read.csv("../data/clusters-harris/clean/merged_data.txt", sep=",")
+
+complete_data <- merge(x=complete_data, y=harris_summary, by.x="file_name", by.y="Name", all=TRUE)
+
+write.csv(complete_data, "../data/clean-clusters/GCs_All_Summary.txt", row.names=FALSE, quote=FALSE)
 
 #These stars are possibly rotating
 DT::datatable(complete_data[abs(as.numeric(complete_data$`vPhi/vR`)) >= 3 & as.numeric(complete_data$size) >= 1000,], rownames=FALSE)

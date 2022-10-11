@@ -26,9 +26,9 @@ harris_data = pd.read_csv('data/clusters-harris/clean/merged_data.txt')
 
 gc_fitting_isochrones = []
 
-
+gc_difs_dict = {}
 for gcName in gcNames:
-    gc_data = pd.read_csv(gcPath + gcName, header=0)
+    gc_data = pd.read_csv(gcPath + gcName, header=0).dropna(subset=["bp_rp", "g_mag"])
     gc_bp_rp = gc_data['bp_rp']
 
     r_pc = 1000*harris_data[harris_data["Name"]==gcName]["R_sun"].to_list()[0]
@@ -37,7 +37,9 @@ for gcName in gcNames:
     isoPath = 'data/isochrones/clean/'
     isoNames = os.listdir(isoPath)
 
+
     first_isochrone = True
+    difs = {}
     for isoName in isoNames:
         iso_data = pd.read_csv(isoPath + isoName, header=0)
         iso_bp_rp = iso_data['G_BPbrmag'] - iso_data['G_RPmag']
@@ -47,20 +49,41 @@ for gcName in gcNames:
         '''
         Add code here to minimise isochrone
         '''
-        # diff_sq = iso_gmag - gc_gmag  where gc_gmag comes from the normal distribution splitting method. 
+        diff_sq = 0
+        for g_mag in iso_gmag:
+            g_mag_index = iso_gmag[iso_gmag == g_mag].index[0]
+            if g_mag_index != len(iso_gmag)-1:
+                g_mag_later = iso_gmag[g_mag_index+1]
+            else:
+                g_mag_later = g_mag
+            
+            if g_mag_index != 0:
+                g_mag_earlier = iso_gmag[g_mag_index-1]
+            else:
+                g_mag_earlier = g_mag
+            
 
-        # if chi_sq is one of the 10 smallest values, ...
-        
-        # just get the number of the isochrone
-        if first_isochrone:
-            fitting_isos = isoName[:-4]
-            first_isochrone = False
-        else:
-            fitting_isos = fitting_isos + ' ' + isoName[:-4]
+            range_upper = abs((g_mag_later - g_mag)/2)
+            range_lower = abs((g_mag - g_mag_earlier)/2)
 
-    gc_fitting_isochrones.append(fitting_isos)
+            # Filter gc data for gc_mag near g_mag
+            filter_gc_bp_rp = gc_bp_rp[(gc_gmag <= g_mag + range_upper) & (gc_gmag >= g_mag - range_lower)]
+            # Should have 1 value for each line in the isochrone - between 1 and 2 values at all times.
+            filter_iso_bp_rp = iso_bp_rp[(iso_gmag <= g_mag + range_upper) & (iso_gmag >= g_mag - range_lower)]
+            
+            # Calculate difference squared of point from all points in GC
+            for bp_rp_val in filter_iso_bp_rp:
+                '''
+                Issue: if filter_GC_bp_rp has main peaks, and the isochrone has two bp_rp values, then difference squared
+                should be between those points individually, not combined.
+                '''
+                # Difference between GC values and isochrone bp_rp value
+                diff_sq += sum((pd.array(filter_gc_bp_rp) - bp_rp_val)**2)
+        difs[isoName] = diff_sq
+        print(isoName, "done for",gcName + "!")
+    
+    gc_difs_dict[gcName] = difs
 
-    print(gcName, "done!")
 
 gc_fitting_isochrones = pd.DataFrame(list(zip(gcNames, gc_fitting_isochrones)), columns=['file_name', 'fitting_isochrone_js'])
-gc_fitting_isochrones.to_csv('data/clean-clusters/GCs_fitting_isochrones.txt', sep=',', index=False)
+gc_fitting_isochrones.to_csv('data/clean-clusters/GCs_real_fitting_isochrones.txt', sep=',', index=False)
