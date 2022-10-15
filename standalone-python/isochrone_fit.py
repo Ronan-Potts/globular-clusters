@@ -9,6 +9,38 @@ Concerns:
 
     * Isochrone data is from Gaia DR2 while GC data is from Gaia EDR3
 
+
+A_v is as follows:
+
+/ NGC_104_47Tuc = 0.124
+X NGC_2298      = 0.434
+X NGC_362       = 0.155
+X NGC_4147      = 0.062
+X NGC_4590_M_68 = 0.155
+X NGC_4833      = 0.992
+/ NGC_5139_oCen = 0.372
+/ NGC_5904_M_5  = 0.093
+X NGC_6101      = 0.155
+X NGC_6121_M_4  = 1.085
+/ NGC_6139      = 2.325
+X NGC_6144      = 1.116
+X NGC_6218_M_12 = 0.589
+X NGC_6254_M_10 = 0.868
+/ NGC_6266_M_62 = 1.457
+/ NGC_6273_M_19 = 1.178
+X NGC_6333_M_9  = 1.178
+X NGC_6341_M_92 = 0.062
+X NGC_6388      = 1.147
+/ NGC_6402_M_14 = 1.86
+/ NGC_6539      = 3.162
+/ NGC_6656_M_22 = 1.054
+X NGC_6681_M_70 = 0.217
+X NGC_6715_M_54 = 0.465
+X NGC_6752      = 0.124
+X NGC_6779_M_56 = 0.806
+/ NGC_6809_M_55 = 0.248
+/ NGC_7078_M_15 = 0.31
+/ NGC_7089_M_2  = 0.186
 '''
 
 import pandas as pd
@@ -19,8 +51,8 @@ import os
 # Accessing the file
 gcPath = 'data/clean-clusters/catalogues/'
 # gcNames = os.listdir(gcPath)
-gcNames = ["NGC_104_47Tuc.txt", "NGC_2298.txt", "NGC_362.txt", "NGC_4147.txt", "NGC_4590_M_68.txt", "NGC_4833.txt", "NGC_5139_oCen.txt", "NGC_5904_M_5.txt", "NGC_6101.txt", "NGC_6121_M_4.txt", "NGC_6139.txt", "NGC_6144.txt", "NGC_6218_M_12.txt", "NGC_6254_M_10.txt", "NGC_6266_M_62.txt", "NGC_6273_M_19.txt", "NGC_6333_M_9.txt", "NGC_6341_M_92.txt", "NGC_6388.txt", "NGC_6402_M_14.txt", "NGC_6539.txt", "NGC_6656_M_22.txt", "NGC_6681_M_70.txt", "NGC_6715_M_54.txt", "NGC_6752.txt", "NGC_6779_M_56.txt", "NGC_6809_M_55.txt", "NGC_7078_M_15.txt", "NGC_7089_M_2.txt", "Terzan_3.txt"]
-
+# gcNames = ["NGC_104_47Tuc.txt", "NGC_2298.txt", "NGC_362.txt", "NGC_4147.txt", "NGC_4590_M_68.txt", "NGC_4833.txt", "NGC_5139_oCen.txt", "NGC_5904_M_5.txt", "NGC_6101.txt", "NGC_6121_M_4.txt", "NGC_6139.txt", "NGC_6144.txt", "NGC_6218_M_12.txt", "NGC_6254_M_10.txt", "NGC_6266_M_62.txt", "NGC_6273_M_19.txt", "NGC_6333_M_9.txt", "NGC_6341_M_92.txt", "NGC_6388.txt", "NGC_6402_M_14.txt", "NGC_6539.txt", "NGC_6656_M_22.txt", "NGC_6681_M_70.txt", "NGC_6715_M_54.txt", "NGC_6752.txt", "NGC_6779_M_56.txt", "NGC_6809_M_55.txt", "NGC_7078_M_15.txt", "NGC_7089_M_2.txt", "Terzan_3.txt"]
+gcNames = ["NGC_104_47Tuc.txt", "NGC_5139_oCen.txt", "NGC_5904_M_5.txt", "NGC_6139.txt", "NGC_6266_M_62.txt", "NGC_6273_M_19.txt", "NGC_6402_M_14.txt", "NGC_6539.txt", "NGC_6656_M_22.txt", "NGC_6809_M_55.txt", "NGC_7078_M_15.txt", "NGC_7089_M_2.txt"]
 
 harris_data = pd.read_csv('data/clusters-harris/clean/merged_data.txt')
 
@@ -34,7 +66,7 @@ for gcName in gcNames:
     r_pc = 1000*harris_data[harris_data["Name"]==gcName]["R_sun"].to_list()[0]
     gc_gmag = gc_data['g_mag'] - 5*np.log10(r_pc/10)
 
-    isoPath = 'data/isochrones/clean/'
+    isoPath = 'data/isochrones/clean/' + gcName[0:-4]
     isoNames = os.listdir(isoPath)
 
 
@@ -47,7 +79,7 @@ for gcName in gcNames:
 
         
         '''
-        Add code here to minimise isochrone
+        Add code here to minimise isochrone. Will use chi-squared best fit test.
         '''
         diff_sq = 0
         for g_mag in iso_gmag:
