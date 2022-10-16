@@ -66,7 +66,7 @@ for gcName in gcNames:
     r_pc = 1000*harris_data[harris_data["Name"]==gcName]["R_sun"].to_list()[0]
     gc_gmag = gc_data['g_mag'] - 5*np.log10(r_pc/10)
 
-    isoPath = 'data/isochrones/clean/' + gcName[0:-4]
+    isoPath = 'data/isochrones/clean/' + gcName[0:-4] + "/"
     isoNames = os.listdir(isoPath)
 
 
@@ -74,15 +74,20 @@ for gcName in gcNames:
     difs = {}
     for isoName in isoNames:
         iso_data = pd.read_csv(isoPath + isoName, header=0)
-        iso_bp_rp = iso_data['G_BPbrmag'] - iso_data['G_RPmag']
+        iso_bp_rp = iso_data['G_BPmag'] - iso_data['G_RPmag']
         iso_gmag = iso_data['Gmag']
 
         
         '''
-        Add code here to minimise isochrone. Will use chi-squared best fit test.
+        Add code here to minimise isochrone. Will use chi-squared.
+
+            iso_gmag: the G-band magnitude of each isochrone in data/isochrones/clean/<GCNAME>/<ISOCHRONE_FILE>
+            iso_bp_rp: the BP - RP magnitude of each isochrone in data/isochrones/clean/<GCNAME>/<ISOCHRONE_FILE>
+            g_m
         '''
         diff_sq = 0
         for g_mag in iso_gmag:
+            # Get index so that I can define an isochrone G-band magnitude "range", which will allow me to filter for G_mag in that range for each GC.
             g_mag_index = iso_gmag[iso_gmag == g_mag].index[0]
             if g_mag_index != len(iso_gmag)-1:
                 g_mag_later = iso_gmag[g_mag_index+1]
@@ -94,13 +99,13 @@ for gcName in gcNames:
             else:
                 g_mag_earlier = g_mag
             
-
+            # Range of isochrone G magnitude is [ 1/2 ( g_mag_i - g_mag_{i-1} )   ,    1/2 ( g_mag_{i+1} - g_mag_i ) ]
             range_upper = abs((g_mag_later - g_mag)/2)
             range_lower = abs((g_mag - g_mag_earlier)/2)
 
-            # Filter gc data for gc_mag near g_mag
+            # Filter gc data for gc_mag in isochrone G magnitude range.
             filter_gc_bp_rp = gc_bp_rp[(gc_gmag <= g_mag + range_upper) & (gc_gmag >= g_mag - range_lower)]
-            # Should have 1 value for each line in the isochrone - between 1 and 2 values at all times.
+            # Should be at most two values in filter_iso_bp_rp
             filter_iso_bp_rp = iso_bp_rp[(iso_gmag <= g_mag + range_upper) & (iso_gmag >= g_mag - range_lower)]
             
             # Calculate difference squared of point from all points in GC
@@ -112,10 +117,30 @@ for gcName in gcNames:
                 # Difference between GC values and isochrone bp_rp value
                 diff_sq += sum((pd.array(filter_gc_bp_rp) - bp_rp_val)**2)
         difs[isoName] = diff_sq
-        print(isoName, "done for",gcName + "!")
     
     gc_difs_dict[gcName] = difs
 
+for name in gcNames:
+    # chi_sq_dict has the form {'isochrone_1.txt': 4283022.063089403, 'isochrone_10.txt': 4037561.0752140614, ... }
+    chi_sq_dict = gc_difs_dict[name]
+    # Sort the chi_sq values and get the smallest 10.
+    sorted_vals = list(chi_sq_dict.values()).sort()
+    smallest_10 = sorted_vals[0:10]
 
-gc_fitting_isochrones = pd.DataFrame(list(zip(gcNames, gc_fitting_isochrones)), columns=['file_name', 'fitting_isochrone_js'])
+    # Identify the isochrones corresponding to the smallest 10 values.
+    best_isochrones = []
+    ordered_values = []
+    for key, value in chi_sq_dict.items():
+        if value in smallest_10:
+            best_isochrones.append(key)
+            ordered_values,append(value)
+    
+    if name == gcNames[0]:
+        gc_fitting_isochrones = pd.DataFrame({name: best_isochrones})
+        gc_fitting_isochrone_vals = pd.DataFrame({name: ordered_values})
+    else:
+        gc_fitting_isochrones.insert(column=name, value=best_isochrones, loc=len(gc_fitting_isochrones.columns))
+        gc_fitting_isochrone_vals.insert(column=name, value=ordered_values, loc=len(gc_fitting_isochrone_vals.columns))
+
 gc_fitting_isochrones.to_csv('data/clean-clusters/GCs_real_fitting_isochrones.txt', sep=',', index=False)
+gc_fitting_isochrone_vals.to_csv('data/clean-clusters/GCs_real_fitting_isochrones_vals.txt', sep=',', index=False)
