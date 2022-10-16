@@ -116,24 +116,28 @@ for gcName in gcNames:
                 '''
                 # Difference between GC values and isochrone bp_rp value
                 diff_sq += sum((pd.array(filter_gc_bp_rp) - bp_rp_val)**2)
-        difs[isoName] = diff_sq
+        difs[isoName] = diff_sq / len(iso_gmag)
+        print(isoName, "done for", gcName)
     
     gc_difs_dict[gcName] = difs
+    print("\n" + gcName, "done!", "\n")
 
 for name in gcNames:
     # chi_sq_dict has the form {'isochrone_1.txt': 4283022.063089403, 'isochrone_10.txt': 4037561.0752140614, ... }
     chi_sq_dict = gc_difs_dict[name]
     # Sort the chi_sq values and get the smallest 10.
-    sorted_vals = list(chi_sq_dict.values()).sort()
+    sorted_vals = list(chi_sq_dict.values())
+    sorted_vals.sort()
     smallest_10 = sorted_vals[0:10]
 
     # Identify the isochrones corresponding to the smallest 10 values.
     best_isochrones = []
     ordered_values = []
-    for key, value in chi_sq_dict.items():
-        if value in smallest_10:
-            best_isochrones.append(key)
-            ordered_values,append(value)
+    for small_chi_sq in smallest_10:
+        for key, value in chi_sq_dict.items():
+            if value == small_chi_sq:
+                best_isochrones.append(key)
+                ordered_values.append(value)
     
     if name == gcNames[0]:
         gc_fitting_isochrones = pd.DataFrame({name: best_isochrones})
