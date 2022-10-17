@@ -83,7 +83,6 @@ for gcName in gcNames:
 
             iso_gmag: the G-band magnitude of each isochrone in data/isochrones/clean/<GCNAME>/<ISOCHRONE_FILE>
             iso_bp_rp: the BP - RP magnitude of each isochrone in data/isochrones/clean/<GCNAME>/<ISOCHRONE_FILE>
-            g_m
         '''
         diff_sq = 0
         for g_mag in iso_gmag:
