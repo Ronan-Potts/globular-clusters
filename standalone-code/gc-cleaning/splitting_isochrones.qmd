@@ -29,7 +29,7 @@ library(tidyverse)
 Import `f_data` - the actual data relating to the galaxy clusters at hand.
 
 ```{r}
-fileName = paste("NGC_104_47Tuc", ".txt", sep="")
+fileName = paste("NGC_5139_oCen", ".txt", sep="")
 
 f_data <- read.csv(paste("./data/clean-clusters/catalogues/", fileName, sep=''), sep=',')
 colnames(f_data) = c("Source ID",

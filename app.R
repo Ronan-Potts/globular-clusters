@@ -165,10 +165,10 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
           fluidRow(box(title="Fitting Isochrones", width=12,
                        uiOutput("scatter_isofit_1"),
                        DT::dataTableOutput("scatter_isofit_2"),
-                       uiOutput("scatter_isofit_3"),
                        DT::dataTableOutput("scatter_isofit_4"),
                        DT::dataTableOutput("scatter_isofit_5"),
-                       DT::dataTableOutput("scatter_isofit_6")
+                       DT::dataTableOutput("scatter_isofit_6"),
+                       uiOutput("scatter_isofit_3")
           )
           ),
           fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px"))
