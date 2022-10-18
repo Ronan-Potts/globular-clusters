@@ -64,7 +64,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
       selectInput("fileName",
                   "Select a Globular Cluster:",
                   choices = fileNames,
-                  selected="NGC_6752"),
+                  selected="NGC_104_47Tuc"),
       menuItem(text="Home", icon=icon("house"), tabName="home"),
       menuItem(text="Globular Cluster", icon=icon("database"), tabName="globular-cluster"),
       menuItem(text="Visualisations", icon=icon("image"), tabName="visualisations",
@@ -165,10 +165,8 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
           fluidRow(box(title="Fitting Isochrones", width=12,
                        uiOutput("scatter_isofit_1"),
                        DT::dataTableOutput("scatter_isofit_2"),
-                       selectInput("isochrone_fit",
-                                   "What Isochrone do you want to fit?",
-                                   choices = fitting_isochrones,
-                                   selected = fitting_isochrones[1])
+                       uiOutput("scatter_isofit_3"),
+                       DT::dataTableOutput("scatter_isofit_4")
           )
           ),
           fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px"))
@@ -259,9 +257,6 @@ server <- function(input, output, session) {
   fitting_isochrones <- reactive({
     fitting_isochrones_df = read.csv(isoFitPath, sep=',')
     fitting_isochrones = fitting_isochrones_df[fitting_isochrones_df$file_name == fileName, "fitting_isochrone_js"]
-    
-    fitting_isochrones = as.vector(str_split_fixed(fitting_isochrones, pattern=" ", n=length(gregexpr(" ", fitting_isochrones)[[1]])+1))
-    fitting_isochrones
   })
   
   h_data <- reactive({
@@ -319,7 +314,7 @@ server <- function(input, output, session) {
         summarise(min = min(gmag_abs), max=max(gmag_abs))
       max_gmag = max_min$max
       min_gmag = max_min$min
-      isochrone_df = read.csv(paste(isoPath,input$isochrone_fit, sep=""),sep=',') |>
+      isochrone_df = isochrone_df() |>
         mutate(bp_rp = G_BPmag - G_RPmag) |>
         filter(Gmag <= max_gmag & Gmag >= min_gmag)
       
@@ -328,6 +323,11 @@ server <- function(input, output, session) {
     p
   }, height = function() {
     0.5*session$clientData$output_distPlot_width
+  })
+  
+  isochrone_df <- reactive({
+    isoPath = paste('data/isochrones/clean/', input$fileName, '/', sep='')
+    read.csv(paste(isoPath,input$isochrone_fit, sep=""),sep=',')
   })
   
   output$histPlot <- renderPlot({
@@ -528,6 +528,20 @@ server <- function(input, output, session) {
       subset(select=c("file_name", "E.B.V.", "A_v", "X.Fe.H.", "age"))
     colnames(gc_summary) = c("Globular Cluster", "E(B-V)", "A_v", "[Fe/H]", "Age (Gyr)")
     DT::datatable(gc_summary, rownames=FALSE)
+  })
+  
+  output$scatter_isofit_3 <- renderUI({
+    fitting_isochrones = list.files(paste('data/isochrones/clean/', input$fileName, '/', sep=''))
+    selectInput("isochrone_fit",
+                "What Isochrone do you want to fit?",
+                choices = fitting_isochrones,
+                selected = fitting_isochrones[1])
+  })
+  
+  
+  output$scatter_isofit_4 <- DT::renderDataTable({
+    gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones.txt", sep=",")
+    DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
   })
 }
 

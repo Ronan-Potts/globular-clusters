@@ -29,7 +29,9 @@ library(tidyverse)
 Import `f_data` - the actual data relating to the galaxy clusters at hand.
 
 ```{r}
-f_data <- read.csv("./data/clean-clusters/catalogues/NGC_6752.txt", sep=',')
+fileName = paste("NGC_104_47Tuc", ".txt", sep="")
+
+f_data <- read.csv(paste("./data/clean-clusters/catalogues/", fileName, sep=''), sep=',')
 colnames(f_data) = c("Source ID",
                      "Right Ascension (deg)",
                      "Declination (deg)",
@@ -50,6 +52,8 @@ colnames(f_data) = c("Source ID",
                      "Parallax Uncertainty (mas)",
                      "G (brightness)",
                      "BP - RP (colour)")
+
+plot(f_data$`BP - RP (colour)`, f_data$`G (brightness)`)
 ```
 
 Import Harris data to translate G-band magnitude of `f_data` so that we look at absolute magnitude rather than apparent magnitude.
@@ -103,7 +107,8 @@ max_min = f_data |>
   summarise(min = min(`G (brightness)`), max=max(`G (brightness)`))
 max_g = max_min$max
 min_g = max_min$min
-num_bins = round(length(f_data$`Source ID`)/1000) # Enough points per bin for CLT
+num_points = length(f_data$`Source ID`)
+num_bins = round(num_points/1000) # Enough points per bin for CLT
 
 bin_width = (max_g - min_g) / num_bins
 
@@ -125,7 +130,7 @@ f_data |>
 ```{r}
 f_data |>
   subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin)) |>
-  filter(bin == 15) |>
+  filter(bin == 10) |>
   ggplot(aes(x=`BP - RP (colour)`)) + geom_histogram()
 ```
 
@@ -139,7 +144,8 @@ f_data |>
 
 ```{r}
 s_data = f_data |>
-  subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin))
+  subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin)) |>
+  filter(!is.na(`BP - RP (colour)`))
 
 point_gmag = c()
 point_bp_rp = c()
@@ -160,20 +166,12 @@ for (b in sort(unique(s_data$bin))){
 }
 
 plot(point_bp_rp, point_gmag)
+
+
 ```
 
-## Single B Value
-
 ```{r}
-s_data = f_data |>
-  subset(select=c(`G (brightness)`, `BP - RP (colour)`, bin))  
-b_data <- s_data |>
-  filter(bin == b)
+df = data.frame(point_bp_rp, point_gmag)
 
-hist = hist(b_data$`BP - RP (colour)`)
-  
-peaks <- data.frame(hist$counts, hist$mids, mean(b_data$`G (brightness)`)) |>
-  filter(hist.counts >= 0.2*max(hist.counts))
-
-colnames(peaks) <- c("counts", "bp_rp", "gmag")
+write.csv(df, paste("./data/clean-clusters/filtered/", fileName, sep=""))
 ```
