@@ -114,7 +114,9 @@ for gcName in gcNames:
                 should be between those points individually, not combined.
                 '''
                 # Difference between GC values and isochrone bp_rp value
-                diff_sq += sum((pd.array(filter_gc_bp_rp) - bp_rp_val)**2)
+                # diff_sq += sum((pd.array(filter_gc_bp_rp) - bp_rp_val)**2)
+                # MAYBE ONLY DO DIFFERENCE FOR CLOSEST POINT?
+                diff_sq += min((filter_gc_bp_rp - bp_rp_val)**2, default=0)
         difs[isoName] = diff_sq / len(iso_gmag)
         print(isoName, "done for", gcName)
     
@@ -145,5 +147,5 @@ for name in gcNames:
         gc_fitting_isochrones.insert(column=name, value=best_isochrones, loc=len(gc_fitting_isochrones.columns))
         gc_fitting_isochrone_vals.insert(column=name, value=ordered_values, loc=len(gc_fitting_isochrone_vals.columns))
 
-gc_fitting_isochrones.to_csv('data/clean-clusters/GCs_real_fitting_isochrones.txt', sep=',', index=False)
-gc_fitting_isochrone_vals.to_csv('data/clean-clusters/GCs_real_fitting_isochrones_vals.txt', sep=',', index=False)
+gc_fitting_isochrones.to_csv('data/clean-clusters/GCs_real_fitting_isochrones_2.txt', sep=',', index=False)
+gc_fitting_isochrone_vals.to_csv('data/clean-clusters/GCs_real_fitting_isochrones_vals_2.txt', sep=',', index=False)

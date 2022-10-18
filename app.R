@@ -166,7 +166,9 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                        uiOutput("scatter_isofit_1"),
                        DT::dataTableOutput("scatter_isofit_2"),
                        uiOutput("scatter_isofit_3"),
-                       DT::dataTableOutput("scatter_isofit_4")
+                       DT::dataTableOutput("scatter_isofit_4"),
+                       DT::dataTableOutput("scatter_isofit_5"),
+                       DT::dataTableOutput("scatter_isofit_6")
           )
           ),
           fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px"))
@@ -254,10 +256,6 @@ server <- function(input, output, session) {
     f_data
   })
   
-  fitting_isochrones <- reactive({
-    fitting_isochrones_df = read.csv(isoFitPath, sep=',')
-    fitting_isochrones = fitting_isochrones_df[fitting_isochrones_df$file_name == fileName, "fitting_isochrone_js"]
-  })
   
   h_data <- reactive({
     h_data <- read.csv("data/clusters-harris/clean/merged_data.txt")
@@ -543,6 +541,19 @@ server <- function(input, output, session) {
     gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones.txt", sep=",")
     DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
   })
+  
+  
+  output$scatter_isofit_5 <- DT::renderDataTable({
+    gc_iso_fit = read.csv("data/clean-clusters/fitting_isochrones/GCs_real_fitting_isochrones.txt", sep=",")
+    DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
+  })
+  
+  
+  output$scatter_isofit_6 <- DT::renderDataTable({
+    gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones_2.txt", sep=",")
+    DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
+  })
+  
 }
 
 # Run the application 
