@@ -160,6 +160,10 @@ p
 
 ## Using vPhi / vR
 
+We used the ratio mean(vPhi) / mean(vR) over a star population to detect rotation as well. If the ratio is large ($\geq 3$) then the globular cluster is likely rotating and worth looking at in more detail.
+
 # Subpopulations in GCs
 
 ## Fitting Isochrones to CMag Diagrams
+
+Introduce isochrones
