@@ -59,6 +59,15 @@ iso_data <- function(gcName, isoNum){
 # iso_data("NGC_104_47Tuc", "1")
 ```
 
+## Best Fitting Isochrones
+
+```{r}
+bf_iso <- function(gcName){
+  gc_iso_fit = read.csv("../../data/clean-clusters/GCs_real_fitting_isochrones_2.txt", sep=",")
+  gc_iso_fit$get(paste(gcName, ".txt", sep=""))
+}
+```
+
 # Detecting Rotating GCs
 
 ## Velocity Distribution

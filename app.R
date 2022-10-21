@@ -290,7 +290,7 @@ server <- function(input, output, session) {
       p = f_data |>
         ggplot() +
         geom_point(alpha=input$alphavar, aes(x=.data[[input$xvar]], y=.data[[input$yvar]]-dist_mod, color=.data[[input$colorvar]])) +
-        scale_y_reverse() + labs(y="G (brightness - absolute)")
+        scale_y_reverse() + labs(y="G (intensity - absolute)")
     } else {
       p = f_data |>
         ggplot() +
@@ -298,7 +298,8 @@ server <- function(input, output, session) {
     }
     
     if (input$colorvar == "BP - RP (colour)") {
-      p = p + scale_color_gradientn(colors=rainbow(10), na.value = "transparent")
+      p = p + scale_color_gradientn(colours = c("red4", "red","lightblue","darkblue"),
+                                    values = c(1.0,0.6,0.4,0), na.value = "transparent")
     } else {
       p = p + scale_color_continuous(limits=input$color_min_max, na.value = "transparent")
     }
@@ -316,9 +317,9 @@ server <- function(input, output, session) {
         mutate(bp_rp = G_BPmag - G_RPmag) |>
         filter(Gmag <= max_gmag & Gmag >= min_gmag)
       
-      p = p + geom_point(data=isochrone_df, mapping = aes(x=bp_rp, y=Gmag), color='red') + scale_y_reverse()
+      p = p + geom_point(data=isochrone_df, mapping = aes(x=bp_rp, y=Gmag), color='black') + scale_y_reverse()
     }
-    p
+    p + theme_bw(base_size = 30)
   }, height = function() {
     0.5*session$clientData$output_distPlot_width
   })
