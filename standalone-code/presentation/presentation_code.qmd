@@ -1,8 +1,7 @@
 ---
 title: "Presentation Code"
 date: "`r Sys.Date()`"
-author: "510456760"
-bibliography: bibliography.bib
+author: "Ronan Potts"
 format: 
   html: 
     self-contained: true # Creates a single HTML file as output
@@ -73,71 +72,107 @@ bf_iso <- function(gcName){
 ## Velocity Distribution
 
 ```{r}
-    R_sun = mean(h_data()[h_data()[,"Name"]==paste(input$fileName,".txt",sep=''),6])
-    mas_to_rad = (2*pi)/(360*3600*1000)
-    kPc_to_km = 3.086e+16
-    yr_to_s = 60*60*24*365
-    num_stars = length(f_data()[,1])
-    # If you want to fit a curve:
-    if (input$binscat_fit) {
-      # Bin x values and calculate mean/se of data in each x bin
-      f_data = f_data() |>
-        mutate(binned_data = cut(get(input$binscat_xvar), breaks=input$binscat_bins)) |>
-        group_by(binned_data) |>
-        summarise(y_data = mean(get(input$binscat_yvar)), se = sd(get(input$binscat_yvar))/sqrt(n()))
-      # Replace levels in binned data with numbers
-      levels(f_data$binned_data) <- gsub("\\(.+,|]", "", levels(f_data$binned_data))
-      # Make binned X values numeric
-      f_data$binned_data = as.numeric(as.character(f_data$binned_data))
+gcName = "NGC_104_47Tuc"
+
+# First, get Harris data for a specific GC
+gc_h_data <- h_data |>
+  filter(Name == paste(gcName, ".txt", sep=""))
+
+# Get GC data as well
+gc_f_data <- gc_data(gcName)
+
+# A few constants
+R_sun = gc_h_data$R_sun
+num_stars = length(gc_f_data[,1])
+# Unit Conversions
+mas_to_rad = (2*pi)/(360*3600*1000)
+kPc_to_km = 3.086e+16
+yr_to_s = 60*60*24*365
+
+
+
+# ____ ACTUALLY GENERATING THE CURVE ______________________________________________
+
+# Bin x values and calculate mean/se of data in each x bin
+b_f_data = gc_f_data |>
+  mutate(binned_data = cut(r, breaks=50)) |>
+  group_by(binned_data) |>
+  summarise(r = mean(r), vP = mean(vPhi), se = sd(vPhi)/sqrt(n()))
       
-      # non-linear regression (nls) on data using eq 1 from https://arxiv.org/pdf/1305.6025.pdf
-      variables = nls(y_data ~ I(E-(omega*binned_data)/(1+b*(binned_data^(2*cpow)))), data=f_data, start=list(E=0, omega=2, b=50, cpow=1))
+# non-linear regression (nls) on data using eq 1 from https://arxiv.org/pdf/1305.6025.pdf
+variables = nls(
+  vP ~ I(E-(omega*r)/(1+b*(r^(2*cpow)))),
+  data=b_f_data,
+  start=list(E=0, omega=2, b=50, cpow=1))
       
-      # Extract constants from NLS
-      E = coef(variables)[1]
-      omega = coef(variables)[2]
-      b = coef(variables)[3]
-      cpow = coef(variables)[4]
+# Add rows containing y values of fitted curve at each x value, and the ribbon y range
+b_f_data = b_f_data |>
+  mutate(nls_vP = predict(variables, r),
+         nls_min = nls_vP - se,
+         nls_max = nls_vP + se)
       
-      # Add rows containing y values of fitted curve at each x value, and the ribbon y range
-      f_data = f_data |>
-        mutate(y_val = I(E-(omega*binned_data)/(1+b*(binned_data^(2*cpow))))) |>
-        mutate(y_min = y_val - se, y_max = y_val + se)
-      
-      # Plot curve
-      p = f_data |>
-        ggplot(aes(x=binned_data, y=y_data)) +
-        geom_point(colour="#00c3ff") +  labs(x=input$binscat_xvar, y=input$binscat_yvar) +
-        geom_function(fun = function(x) I(E-(omega*x)/(1+b*(x^(2*cpow))))) +
-        geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2)
-      
-      if (input$binscat_xvar == "Radius (mas)") {
-        # Add second x axis on top
-        p = p + scale_x_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad, name = "Radius (km)"))}
-      if (input$binscat_yvar == "Tangential Velocity (mas/yr)"){
-        # Add second y axis on right
-        p = p + scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Tangential Velocity (km/s)"))
-      } else if (input$binscat_yvar == "Radial Velocity (mas/yr)"){
-        p = p + scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Radial Velocity (km/s)"))
-      }
-      
-      if (input$binscat_fit == TRUE){
-        v_p = max(abs(f_data$y_val-E))
-        v_p = as.numeric(f_data[abs(f_data$y_val-E) == v_p, "y_val"])
-        error = as.numeric(f_data[f_data$y_val == v_p, "se"])
-        x_p = as.numeric(f_data[f_data$y_val == v_p, "binned_data"])
-        if (v_p > 0) {
-          p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p + 1.5*error)
-        } else {
-        p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p - 1.5*error)
-        }
-      }
-      p
-    }
+# Plot curve
+p = b_f_data |>
+    ggplot(
+      aes(x=r, y=vP)
+      ) +
+    geom_point(
+      colour="#00c3ff"
+      ) +
+    labs(
+      x="Radius (mas)",
+      y="Tangential Velocity (mas/yr)"
+      ) +
+    geom_function(
+      fun = function(x) I(E-(omega*x)/(1+b*(x^(2*cpow))))
+      ) +
+    geom_ribbon(
+      aes(ymin=nls_min, ymax=nls_max),
+      alpha=0.2
+      ) +
+    scale_x_continuous(
+      sec.axis = sec_axis(
+        trans = ~ . * R_sun * kPc_to_km * mas_to_rad,
+        name = "Radius (km)")
+      ) + 
+    scale_y_continuous(
+      sec.axis = sec_axis(
+        trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s,
+        name = "Tangential Velocity (km/s)")
+      )
+
+
+# Find Maximum Tangential Velocity
+
+peak_data = b_f_data |>
+  filter(abs(nls_vP) == max(abs(nls_vP)))
+         
+v_p = peak_data$nls_vP
+error = peak_data$se
+r_p = peak_data$r
+
+
+# Label Maximum Tangential Velocity
+
+if (v_p > 0) {
+  p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=r_p, y = v_p + 1.5*error)
+} else {
+  p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=r_p, y = v_p - 1.5*error)
+}
+```
+
+```{r}
+#| label: fig-velcurve
+#| fig-cap: "Velocity Curve for NGC 104 47Tuc" 
+p
 ```
 
 ## Using vPhi / vR
 
+We used the ratio mean(vPhi) / mean(vR) over a star population to detect rotation as well. If the ratio is large ($\geq 3$) then the globular cluster is likely rotating and worth looking at in more detail.
+
 # Subpopulations in GCs
 
 ## Fitting Isochrones to CMag Diagrams
+
+Introduce isochrones
