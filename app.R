@@ -164,14 +164,17 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
             )),
           fluidRow(box(title="Fitting Isochrones", width=12,
                        uiOutput("scatter_isofit_1"),
-                       DT::dataTableOutput("scatter_isofit_2"),
-                       DT::dataTableOutput("scatter_isofit_4"),
-                       DT::dataTableOutput("scatter_isofit_5"),
+                       uiOutput("scatter_isofit_6_exp"),
                        DT::dataTableOutput("scatter_isofit_6"),
                        uiOutput("scatter_isofit_3")
           )
           ),
-          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px"))
+          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px")),
+          fluidRow(box(title="Useful Globular Cluster Parameters", width=12,
+                       uiOutput("scatter_isofit_7"),
+                       DT::dataTableOutput("scatter_isofit_2")
+                       )
+                   )
           
     ),
     tabItem(tabName='binx-scatter-plot',
@@ -549,10 +552,19 @@ server <- function(input, output, session) {
     DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
   })
   
+  output$scatter_isofit_6_exp <- renderUI({
+    HTML(paste("Below, you'll find a table containing the ten best fitting isochrones for each globular cluster."))
+  })
+  
+  
   
   output$scatter_isofit_6 <- DT::renderDataTable({
     gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones_2.txt", sep=",")
     DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
+  })
+  
+  output$scatter_isofit_7 <- renderUI({
+    HTML(paste("The table below contains useful information for globular clusters which we believe to be rotating. Parameters from this table were used to generate potentially fitting isochrones from <a href='http://stev.oapd.inaf.it/cgi-bin/cmd'>the CMD 3.6 input form</a>.", "", sep="<br><br>"))
   })
   
 }

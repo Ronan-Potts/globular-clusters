@@ -63,8 +63,14 @@ iso_data <- function(gcName, isoNum){
 ```{r}
 bf_iso <- function(gcName){
   gc_iso_fit = read.csv("../../data/clean-clusters/GCs_real_fitting_isochrones_2.txt", sep=",")
-  gc_iso_fit$get(paste(gcName, ".txt", sep=""))
+  gc_iso_fit[, paste(gcName, ".txt", sep="")]
 }
+```
+
+## gcName
+
+```{r}
+gcName = "NGC_104_47Tuc"
 ```
 
 # Detecting Rotating GCs
@@ -72,8 +78,6 @@ bf_iso <- function(gcName){
 ## Velocity Distribution
 
 ```{r}
-gcName = "NGC_104_47Tuc"
-
 # First, get Harris data for a specific GC
 gc_h_data <- h_data |>
   filter(Name == paste(gcName, ".txt", sep=""))
@@ -175,4 +179,73 @@ We used the ratio mean(vPhi) / mean(vR) over a star population to detect rotatio
 
 ## Fitting Isochrones to CMag Diagrams
 
-Introduce isochrones
+Basic CMag Diagram:
+
+```{r}
+# Basic Parameters _________________________________________________________________
+gcName = "NGC_7089_M_2"
+
+# NGC_104_47Tuc    good                                       X
+# NGC_5139_oCen    good                                       x
+# NGC_5904_M_5     needs work                                 X
+# NGC_6139         needs work                                 X
+# NGC_6266_M_62    needs work                                 X
+# NGC_6273_M_19    good                                       X
+# NGC_6402_M_14    good                                       X
+# NGC_6539         good                                       X
+# NGC_6656_M_22    good                                       X
+# NGC_6809_M_55    needs more work                            X
+# NGC_7078_M_15
+# NGC_7089_M_2
+
+isoNum = "130"
+n_Tuc = 85559
+alpha = 0.1
+iso_alpha = 0.5
+r_pc = 1000*gc_h_data$R_sun
+dist_mod = 5*log10(r_pc/10)
+
+# Data used ________________________________________________________________________
+gc_h_data = h_data |>
+  filter(Name == paste(gcName, ".txt", sep=""))
+
+f_data = gc_data(gcName) |>
+  filter(!is.na(bp_rp)) |>
+  mutate(file_name = gsub("_", " ", gcName))
+
+n_gc = length(f_data$X..source_id)
+
+max_min = f_data |>
+  mutate(gmag_abs = g_mag - dist_mod) |>
+  summarise(min = min(gmag_abs), max=max(gmag_abs))
+
+max_gmag = max_min$max
+min_gmag = max_min$min
+
+
+
+# Create Plot ______________________________________________________________________
+
+p = f_data |>
+  ggplot() +
+  geom_point(alpha=alpha*(n_Tuc/n_gc), aes(x=bp_rp, y=g_mag-dist_mod, color=bp_rp)) +
+  scale_color_gradientn(
+    colours = c("red4", "red", "lightblue", "darkblue"),
+    values = c(1.0,0.6,0.4,0),
+    na.value = "transparent") +
+  scale_y_reverse() +
+  labs(y="G (intensity - absolute)", x="BP - RP (colour)", title=paste("Colour-magnitude diagram for", gsub("_", " ", gcName), sep=" "))
+
+fitting_isochrones = substr(bf_iso(gcName), 11, nchar(bf_iso(gcName))-4)
+
+for (isoNum in fitting_isochrones) {
+  isochrone_df = iso_data(gcName, isoNum) |>
+    mutate(bp_rp = G_BPmag - G_RPmag) |>
+    filter(Gmag <= max_gmag & Gmag >= min_gmag)
+  p = p + geom_point(alpha = iso_alpha, size=0.5, data=isochrone_df, mapping = aes(x=bp_rp, y=Gmag), color='black')
+}
+```
+
+```{r}
+p
+```
