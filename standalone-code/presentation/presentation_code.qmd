@@ -183,7 +183,7 @@ Basic CMag Diagram:
 
 ```{r}
 # Basic Parameters _________________________________________________________________
-gcName = "NGC_7089_M_2"
+gcName = "NGC_6539"
 
 # NGC_104_47Tuc    good                                       X
 # NGC_5139_oCen    good                                       x
@@ -200,8 +200,8 @@ gcName = "NGC_7089_M_2"
 
 isoNum = "130"
 n_Tuc = 85559
-alpha = 0.1
-iso_alpha = 0.5
+alpha = 0.005
+iso_alpha = 1
 r_pc = 1000*gc_h_data$R_sun
 dist_mod = 5*log10(r_pc/10)
 
@@ -242,7 +242,7 @@ for (isoNum in fitting_isochrones) {
   isochrone_df = iso_data(gcName, isoNum) |>
     mutate(bp_rp = G_BPmag - G_RPmag) |>
     filter(Gmag <= max_gmag & Gmag >= min_gmag)
-  p = p + geom_point(alpha = iso_alpha, size=0.5, data=isochrone_df, mapping = aes(x=bp_rp, y=Gmag), color='black')
+  p = p + geom_point(alpha = iso_alpha, size=1, data=isochrone_df, mapping = aes(x=bp_rp, y=Gmag), color='black')
 }
 ```
 

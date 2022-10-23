@@ -29,9 +29,9 @@ library(tidyverse)
 Import `f_data` - the actual data relating to the galaxy clusters at hand.
 
 ```{r}
-fileName = paste("NGC_5139_oCen", ".txt", sep="")
+fileName = paste("NGC_104_47Tuc", ".txt", sep="")
 
-f_data <- read.csv(paste("./data/clean-clusters/catalogues/", fileName, sep=''), sep=',')
+f_data <- read.csv(paste("../../data/clean-clusters/catalogues/", fileName, sep=''), sep=',')
 colnames(f_data) = c("Source ID",
                      "Right Ascension (deg)",
                      "Declination (deg)",
@@ -53,40 +53,43 @@ colnames(f_data) = c("Source ID",
                      "G (brightness)",
                      "BP - RP (colour)")
 
-plot(f_data$`BP - RP (colour)`, f_data$`G (brightness)`)
 ```
 
 Import Harris data to translate G-band magnitude of `f_data` so that we look at absolute magnitude rather than apparent magnitude.
 
 ```{r}
-h_data <- read.csv("./data/clusters-harris/clean/merged_data.txt")
+h_data <- read.csv("../../data/clusters-harris/clean/merged_data.txt")
 
 r_pc = 1000*(h_data[h_data$Name == "NGC_6752.txt", "R_sun"])
 dist_mod = 5*log10(r_pc/10)
 
-f_data |>
+f_data = f_data |>
   mutate(`G (brightness)` = `G (brightness)` - dist_mod)
 ```
 
 # Generating Plot
 
 ```{r}
-p = f_data |>
-  ggplot() +
-  geom_point(alpha=0.1,
-             aes(x=`BP - RP (colour)`,
-                 y=`G (brightness)`,
-                 color=`BP - RP (colour)`
-                 )
-             ) +
+
+lower_bp_rp = min(f_data$`BP - RP (colour)`)
+upper_bp_rp = max(f_data$`BP - RP (colour)`)
+lower_gmag = min(f_data$`G (brightness)`)
+upper_gmag = max(f_data$`G (brightness)`)
+
+p = ggplot() + 
+  geom_point(data=f_data, alpha=0.3, aes(x=`BP - RP (colour)`, y=`G (brightness)`, color=`BP - RP (colour)`)) +
+  coord_cartesian(xlim = c(lower_bp_rp, upper_bp_rp), ylim=c(upper_gmag, lower_gmag)) + 
   scale_y_reverse() +
-  labs(y="G (brightness - absolute)") +
-  scale_color_gradientn(colors=rainbow(10), na.value = "transparent")
+  labs(y="G (absolute intensity)") + 
+  scale_color_gradientn(colours = c("red4", "red","lightblue","darkblue"),
+                        values = c(1.0,0.6,0.4,0), na.value = "transparent") +
+  theme_bw(base_size=30) + 
+  geom_point(alpha=1, size=1, aes(x=point_bp_rp, y=point_gmag), color='black', data=point_df)
 
 # To fit isochrone:
 
 # max_min = f_data |>
-#   mutate(gmag_abs = `G (brightness)` - dist_mod) |>
+#   mutate(gmag_abs = `G (brightness)`) |>
 #   summarise(min = min(gmag_abs), max=max(gmag_abs))
 # max_gmag = max_min$max
 # min_gmag = max_min$min
@@ -162,11 +165,25 @@ for (b in sort(unique(s_data$bin))){
   
   point_gmag = append(point_gmag, peaks$gmag)
   point_bp_rp = append(point_bp_rp, peaks$bp_rp)
-  print(b)
 }
 
-plot(point_bp_rp, point_gmag)
+point_df = data.frame(point_bp_rp, point_gmag)
 
+point_df |> ggplot(
+    aes(
+      x=point_bp_rp,
+      y=point_gmag,
+      color=point_bp_rp
+      )
+    ) +
+  geom_point() +
+  scale_y_reverse() +
+  labs(
+    x="BP - RP (colour)",
+    y="G (brightness)"
+  ) +
+  scale_color_gradientn(colours = c("red4", "red","lightblue","darkblue"),
+                      values = c(1.0,0.6,0.4,0), na.value = "transparent")
 
 ```
 
