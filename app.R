@@ -543,7 +543,7 @@ server <- function(input, output, session) {
   
   
   output$scatter_isofit_4 <- DT::renderDataTable({
-    gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones.txt", sep=",")
+    gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones.txt", sep=",")q
     DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
   })
   
@@ -567,7 +567,7 @@ server <- function(input, output, session) {
   
   output$scatter_isofit_8 <- DT::renderDataTable({
     gc_iso_summary = read.csv(paste("data/isochrones/clean/", input$fileName, "/", input$isochrone_fit, sep=""), sep=",") |>
-      summarise(`Age (Gyr)` = mean(logAge), Metallicity = mean(MH)) |>
+      summarise(`Age (Gyr)` = signif((10^(mean(logAge))) / (10^9), 4), Metallicity = mean(MH)) |>
       mutate(Isochrone = input$isochrone_fit) |>
       subset(select=c("Isochrone", "Age (Gyr)", "Metallicity"))
     DT::datatable(gc_iso_summary, rownames=FALSE, options = list(scrollX=TRUE))
