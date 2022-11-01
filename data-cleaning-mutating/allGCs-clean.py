@@ -32,7 +32,7 @@ for fileName in fileNames:
     # Add radial and tangential velocities
     f_data['vR'] = (f_data['vx']*f_data['x']+f_data['vy']*f_data['y'])/f_data['r']
     f_data['vPhi'] = (f_data['x']*f_data['vy']-f_data['y']*f_data['vx'])/f_data['r']
-
+    rotation_parameter = np.abs(np.mean(f_data['vPhi']) / np.mean(f_data['vR']))
     # Remove useless columns (qflag, Sigma, bp_rp, g_mag)
     f_data = f_data.drop(['qflag', 'Sigma'], axis=1)
 

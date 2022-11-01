@@ -35,7 +35,7 @@ colnames = c("Source ID",
              "Dec. Proper Motion (mas/yr)",
              "Right Ascension Deviation (deg)",
              "Declination Deviation (deg)",
-             "Radius (mas)",
+             "Radius (deg)",
              "Relative RA Proper Motion (mas/yr)",
              "Relative Dec. Proper Motion (mas/yr)",
              "Radial Velocity (mas/yr)",
@@ -184,7 +184,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                        selectInput("binscat_xvar",
                                    "Select X Variable:",
                                    choices = colnames(f_data),
-                                   selected="Radius (mas)")),
+                                   selected="Radius (deg)")),
                 column(width=3,
                        selectInput("binscat_yvar",
                                    "Select Y Variable:",
@@ -370,6 +370,7 @@ server <- function(input, output, session) {
   output$binnedScatter <- renderPlot({
     R_sun = mean(h_data()[h_data()[,"Name"]==paste(input$fileName,".txt",sep=''),6])
     mas_to_rad = (2*pi)/(360*3600*1000)
+    deg_to_rad = pi/180
     kPc_to_km = 3.086e+16
     yr_to_s = 60*60*24*365
     num_stars = length(f_data()[,1])
@@ -404,11 +405,12 @@ server <- function(input, output, session) {
         ggplot(aes(x=binned_data, y=y_data)) +
         geom_point(colour="#00c3ff") +  labs(x=input$binscat_xvar, y=input$binscat_yvar) +
         geom_function(fun = function(x) I(E-(omega*x)/(1+b*(x^(2*cpow))))) +
-        geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2)
+        geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2) + 
+        theme_bw(base_size=24)
       
-      if (input$binscat_xvar == "Radius (mas)") {
+      if (input$binscat_xvar == "Radius (deg)") {
         # Add second x axis on top
-        p = p + scale_x_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad, name = "Radius (km)"))}
+        p = p + scale_x_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * deg_to_rad, name = "Radius (km)"))}
       if (input$binscat_yvar == "Tangential Velocity (mas/yr)"){
         # Add second y axis on right
         p = p + scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Tangential Velocity (km/s)"))
@@ -422,9 +424,9 @@ server <- function(input, output, session) {
         error = as.numeric(f_data[f_data$y_val == v_p, "se"])
         x_p = as.numeric(f_data[f_data$y_val == v_p, "binned_data"])
         if (v_p > 0) {
-          p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p + 1.5*error)
+          p = p + annotate("text", label=paste0("v = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p + 1.5*error, size=10)
         } else {
-        p = p + annotate("text", label=paste0("v_p = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p - 1.5*error)
+        p = p + annotate("text", label=paste0("v = ", signif(v_p,2), " +- ", signif(error,1)), x=x_p, y = v_p - 1.5*error, size=10)
         }
       }
       p
@@ -449,11 +451,12 @@ server <- function(input, output, session) {
       ggplot(aes(x=binned_data, y=y_data)) +
       geom_point(colour="#00c3ff") + 
       labs(x=input$binscat_xvar, y=input$binscat_yvar) +
-      geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2)
+      geom_ribbon(aes(ymin=y_min, ymax=y_max), alpha=0.2) + 
+      theme_bw(base_size=24)
     
-    if (input$binscat_xvar == "Radius (mas)") {
+    if (input$binscat_xvar == "Radius (deg)") {
         # Add second x axis on top
-        p = p + scale_x_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad, name = "Radius (km)"))}
+        p = p + scale_x_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * deg_to_rad, name = "Radius (km)"))}
     if (input$binscat_yvar == "Tangential Velocity (mas/yr)"){
         # Add second y axis on right
         p = p + scale_y_continuous(sec.axis = sec_axis(trans = ~ . * R_sun * kPc_to_km * mas_to_rad / yr_to_s, name = "Tangential Velocity (km/s)"))
