@@ -183,7 +183,7 @@ Basic CMag Diagram:
 
 ```{r}
 # Basic Parameters _________________________________________________________________
-gcName = "NGC_6539"
+gcName = "NGC_104_47Tuc"
 
 # NGC_104_47Tuc    good                                       X
 # NGC_5139_oCen    good                                       x
@@ -200,8 +200,8 @@ gcName = "NGC_6539"
 
 isoNum = "130"
 n_Tuc = 85559
-alpha = 0.005
-iso_alpha = 1
+alpha = 0.1
+iso_alpha = 0.5
 r_pc = 1000*gc_h_data$R_sun
 dist_mod = 5*log10(r_pc/10)
 
@@ -234,7 +234,7 @@ p = f_data |>
     values = c(1.0,0.6,0.4,0),
     na.value = "transparent") +
   scale_y_reverse() +
-  labs(y="G (intensity - absolute)", x="BP - RP (colour)", title=paste("Colour-magnitude diagram for", gsub("_", " ", gcName), sep=" "))
+  labs(y="G (absolute magnitude)", x="BP - RP (colour)", title=paste("Colour-magnitude diagram for", gsub("_", " ", gcName), sep=" "))
 
 fitting_isochrones = substr(bf_iso(gcName), 11, nchar(bf_iso(gcName))-4)
 

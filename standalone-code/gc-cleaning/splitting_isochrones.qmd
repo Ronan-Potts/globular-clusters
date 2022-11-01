@@ -80,7 +80,7 @@ p = ggplot() +
   geom_point(data=f_data, alpha=0.3, aes(x=`BP - RP (colour)`, y=`G (brightness)`, color=`BP - RP (colour)`)) +
   coord_cartesian(xlim = c(lower_bp_rp, upper_bp_rp), ylim=c(upper_gmag, lower_gmag)) + 
   scale_y_reverse() +
-  labs(y="G (absolute intensity)") + 
+  labs(y="G (absolute magnitude)") + 
   scale_color_gradientn(colours = c("red4", "red","lightblue","darkblue"),
                         values = c(1.0,0.6,0.4,0), na.value = "transparent") +
   theme_bw(base_size=30) + 

@@ -145,6 +145,11 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                          DT::dataTableOutput("scatter_isofit_8")
             )
             ),
+            fluidRow(box(title="Useful Globular Cluster Parameters", width=12,
+                         uiOutput("scatter_isofit_7"),
+                         DT::dataTableOutput("scatter_isofit_2")
+            )
+            ),
           fluidRow(box(width=12, title="Controls",
             column(width=3,
              selectInput("xvar",
@@ -167,13 +172,7 @@ ui <- dashboardPage(title="Globular Cluster Visualisations",
                    sliderInput("alphavar", label = h3("Transparency"), min = 0, 
                                max = 1, value = 0.1))
             )),
-          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px")),
-          fluidRow(box(title="Useful Globular Cluster Parameters", width=12,
-                       uiOutput("scatter_isofit_7"),
-                       DT::dataTableOutput("scatter_isofit_2")
-                       )
-                   )
-          
+          fluidRow(box(title="Scatter Plot", width=12, align="center", plotOutput("distPlot", width="100%"), height="720px"))
     ),
     tabItem(tabName='binx-scatter-plot',
             fluidRow(box(width=12, title="Rotating Stars",
@@ -540,7 +539,7 @@ server <- function(input, output, session) {
   
   
   output$scatter_isofit_4 <- DT::renderDataTable({
-    gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones.txt", sep=",")q
+    gc_iso_fit = read.csv("data/clean-clusters/GCs_real_fitting_isochrones.txt", sep=",")
     DT::datatable(gc_iso_fit, rownames=FALSE, options = list(scrollX=TRUE))
   })
   
