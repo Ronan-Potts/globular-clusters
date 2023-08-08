@@ -182,8 +182,9 @@ We used the ratio mean(vPhi) / mean(vR) over a star population to detect rotatio
 Basic CMag Diagram:
 
 ```{r}
-# Basic Parameters _________________________________________________________________
-gcName = "NGC_104_47Tuc"
+# Basic Parameters ________________________________________________________________
+
+gcName = "NGC_6809_M_55"
 
 # NGC_104_47Tuc    good                                       X
 # NGC_5139_oCen    good                                       x
@@ -198,6 +199,10 @@ gcName = "NGC_104_47Tuc"
 # NGC_7078_M_15
 # NGC_7089_M_2
 
+# First, get Harris data for a specific GC
+gc_h_data <- h_data |>
+  filter(Name == paste(gcName, ".txt", sep=""))
+
 isoNum = "130"
 n_Tuc = 85559
 alpha = 0.1
@@ -205,9 +210,7 @@ iso_alpha = 0.5
 r_pc = 1000*gc_h_data$R_sun
 dist_mod = 5*log10(r_pc/10)
 
-# Data used ________________________________________________________________________
-gc_h_data = h_data |>
-  filter(Name == paste(gcName, ".txt", sep=""))
+# Data used _______________________________________________________________________
 
 f_data = gc_data(gcName) |>
   filter(!is.na(bp_rp)) |>
@@ -247,5 +250,5 @@ for (isoNum in fitting_isochrones) {
 ```
 
 ```{r}
-p
+p + theme_bw(base_size = 30)
 ```

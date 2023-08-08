@@ -9,8 +9,8 @@ fileNames = ["NGC_5139_oCen.txt", "NGC_104_47Tuc.txt", "NGC_6273_M_19.txt", "NGC
              "NGC_7089_M_2.txt", "NGC_6266_M_62.txt", "NGC_6656_M_22.txt", "NGC_5904_M_5.txt",
              "NGC_6139.txt", "NGC_6809_M_55.txt", "NGC_6402_M_14.txt"]
 widths=[0.4, 0.4, 0.05, 0.05, 0.1, 0.05, 0.12, 0.2, 0.05, 0.1, 0.4]
-fileNames = ["NGC_6402_M_14.txt"]
-widths=[0.05]
+fileNames = ["NGC_6752.txt"]
+widths=[0.4]
 for fileName,width in zip(fileNames,widths):
     print(fileName, width)
     df_pos_vel = pd.read_csv(filePath + fileName, header=0)
@@ -92,6 +92,6 @@ for fileName,width in zip(fileNames,widths):
     for n, label in enumerate(ax.yaxis.get_ticklabels()):
         if (n+1) % every_nth != 0:
             label.set_visible(False)
-    plt.savefig('C:/Users/ronan/OneDrive/Desktop/PHYS2923 Assignment/Rotation/stream/' + fileName[0:-4])
+    plt.savefig('C:/Users/Ronan/Desktop/isochrones/' + fileName[0:-4])
 
 
